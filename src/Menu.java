@@ -43,7 +43,12 @@ public class Menu {
             switch (seleccion){
                 case 1 -> registrarUsuarioUI();
                 case 2 -> listarUsuariosUI();
-                case 3 -> loginUsuarioUI();
+                case 3 -> {
+                    loginUsuarioUI();
+                    if (usuarioActivo != null){
+                        menuUsuarios();
+                    }
+                }
                 case 4 -> listarSubastasUI();
                 case 5 -> {
                     salir = true;
@@ -61,23 +66,32 @@ public class Menu {
     */
 
     private void menuUsuarios() {
-        mostrarOpciones();
-        printOpciones();
 
-        int seleccion = leerEntero();
-        String opcionElegida = opciones.get(seleccion - 1);
+        while(true) {
 
-        switch (opcionElegida) {
-            case "Crear subasta" -> System.out.println("Crear subasta");
-            case "Listar subastas" -> System.out.println("Listar subastas");
-            case "Mis intereses" -> menuIntereses();
-            case "Mis objetos" -> menuObjetos();
-            case "Salir" -> {
-                    System.out.println("Regresando al menú principal.");
-                    System.out.println("¡Regresa pronto, " + usuarioActivo.getNombreCompleto());
-                    return;}
-            default -> opcionInvalida();
+            mostrarOpciones();
+            printOpciones();
+
+            int seleccion = leerEntero();
+            String opcionElegida = opciones.get(seleccion - 1);
+
+            System.out.println("-------------------------------------");
+            System.out.println("Usted ha elegido: " + opcionElegida);
+
+            switch (opcionElegida) {
+                case "Crear subasta" -> System.out.println("Crear subasta");
+                case "Listar subastas" -> System.out.println("Listar subastas");
+                case "Mis intereses" -> menuIntereses();
+                case "Mis objetos" -> menuObjetos();
+                case "Salir" -> {
+                    System.out.println("\n¡Regresa pronto, " + usuarioActivo.getNombreCompleto() + "!");
+                    System.out.println("\n\nRegresando al menú principal.");
+                    usuarioActivo = null;
+                    return;
+                }
+                default -> opcionInvalida();
             }
+        }
         }
 
     //interactúa con método printOpciones para desplegar opciones dinámicamente
@@ -148,8 +162,8 @@ public class Menu {
     }
 
     public void registrarUsuarioUI(){
-
-        System.out.println("\n\nSeleccione el tipo de usuario que desea registrar:");
+        System.out.println("\n\n------Registro de usuario------");
+        System.out.println("\nSeleccione el tipo de usuario que desea registrar:");
         System.out.println("1) Vendedor");
         System.out.println("2) Coleccionista");
 
@@ -162,8 +176,26 @@ public class Menu {
             System.out.println("El usuario debe ser mayor de edad.");
             return;
         }
+            /*
+                entra un loop para verificar que la identificación ingresada
+                no sea repetida
+             */
+            String userId;
+            do{
+                userId = textInput("Identificación (0 para cancelar):");
+
+                if (userId.equals("0")){
+                    System.out.println("¡Proceso cancelado!");
+                    System.out.println("Regresando al menú");
+                    return;
+                }
+
+                if (servuser.idExist(userId)){
+                    System.out.println("Ya existe un usuario con esta identificación.");
+                }
+            } while(servuser.idExist(userId));
+
         String userName = textInput("Nombre completo:");
-        String userId = textInput("Identificación:");
         String userEmail = textInput("E-mail:");
         String userPw = textInput("Contraseña:");
         String userDir = textInput("Dirección:");
@@ -173,28 +205,68 @@ public class Menu {
     }
 
     private void listarUsuariosUI(){
+
+        System.out.println("\n\n------Lista de usuarios------");
         List<Usuario> users = servuser.listarUsuarios();
         if (users.isEmpty()){
             System.out.println("No hay usuarios registrados aún.");
             return;
         }
+        System.out.println("\nUsuario(s) en el sistema:");
         for (Usuario u : users){
             System.out.println(u.getIdentificacion() + " - " + u.getNombreCompleto());
         }
     }
 
     //permite iniciar sesión como un usuario
-    private void loginUsuarioUI(){
-        String id = textInput("Identificación:");
-        String pw = textInput("Contraseña:");
-        Usuario u = servuser.autenticarUsuario(id, pw);
+    private void loginUsuarioUI() {
 
-        if (u == null){
-            System.out.println("Credenciales inválidas.");
+        System.out.println("\n\n------Iniciar sesión como usuario------");
+        //primero verifica que haya usuarios para login
+        if (servuser.listarUsuarios().isEmpty()){
+            System.out.println("No hay usuarios registrados aún.");
             return;
         }
-        usuarioActivo = u;
-        System.out.println("Bienvenido " + u.getNombreCompleto());
+        /*
+        Entra un loop para validar que la id ingresada
+        exista para poder habilitar el inicio de sesión
+         */
+        Usuario u = null;
+        while (u == null) {
+            String id = textInput("Identificación (0 para cancelar):");
+
+            if (id.equals("0")){
+                System.out.println("¡Proceso cancelado!");
+                System.out.println("Regresando al menú");
+                return;
+            } //permite al usuario salir
+
+            u = servuser.lookupUser(id);
+            if (u == null) {
+                System.out.println("Usuario no encontrado.");
+            }
+        }
+
+        /*
+        Entra en loop para autenticación.
+        Limita intentos a 3
+         */
+        int intentos = 0;
+        while (intentos < 3){
+            String pw = textInput("Contraseña:");
+            if (servuser.autenticarUsuario(u, pw)) {
+                usuarioActivo = u;
+                System.out.println("\n\n------¡Iniciar de sesión exitoso!------");
+                System.out.println("¡Bienvenido " + u.getNombreCompleto() + "!");
+                return;
+            }
+            System.out.println("Credenciales inválidas.");
+            intentos++;
+            System.out.println("Quedan " + (3 - intentos) + "intentos.");
+        }
+
+        System.out.println("Autenticación fallida.");
+        System.out.println("Regresando al menú principal.");
     }
 
     private void listarInteresesUI(){
@@ -227,6 +299,8 @@ public class Menu {
     }
 
     public void listarSubastasUI(){
+        System.out.println("\n\n------Lista de Subastas------");
+
         List<Subasta> subastas = servsubasta.listarSubastas();
         if (subastas.isEmpty()){
             System.out.println("No hay subastas registradas aún.");

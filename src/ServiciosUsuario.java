@@ -40,13 +40,26 @@ public class ServiciosUsuario {
         return List.copyOf(users);
     }
 
-    public Usuario autenticarUsuario(String id, String pw) {
-        for (Usuario u : users) {
-            if (u.getIdentificacion().equals(id) && u.getContrasena().equals(pw)) {
+    public Usuario lookupUser(String id){
+        for (Usuario u : users){
+            if (u.getIdentificacion().equals(id)){
                 return u;
             }
         }
         return null;
+    }
+
+    public boolean idExist(String id){
+        for (Usuario u : users){
+            if(u.getIdentificacion().equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean autenticarUsuario(Usuario u, String pw) {
+        return u.getContrasena().equals(pw);
     }
 
     //métodos para atributos de usuarios
