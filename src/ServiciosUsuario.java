@@ -19,13 +19,10 @@ public class ServiciosUsuario {
 
     public void registrarModerador(String nombre, String email, String pw,
                                    String id, LocalDate DOB) {
-        Moderador mod = new Moderador(nombre, id, DOB, pw, email);
-        users.add(mod);
+        admin = new Moderador(nombre, id, DOB, pw, email);
     }
 
-    public boolean adminExiste() {
-        return admin != null;
-    }
+    public boolean adminExiste() {return admin != null;}
 
     public Usuario registrarUsuario(String nombre, String email, String pw,
                                     String id, String dir, LocalDate DOB, int userType) {

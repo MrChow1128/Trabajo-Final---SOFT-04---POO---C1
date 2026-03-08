@@ -21,14 +21,13 @@ public class Menu {
 
     public void ejecturar(){
         limpiarPantallaFake();
+
+        //crear al moderador antes de iniciar
+        while (!servuser.adminExiste()){crearModeradorUI();}
+
         boolean salir = false;
 
         while (!salir){
-
-            if (!servuser.adminExiste()){
-                //el programa incia y solicita crear al moderador
-                crearModeradorUI();
-            }
 
             System.out.println("========================================");
             System.out.println("   Sistema de Subastas - Menú Consola");
