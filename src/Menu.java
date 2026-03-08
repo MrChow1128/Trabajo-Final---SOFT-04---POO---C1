@@ -2,6 +2,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -70,8 +71,8 @@ public class Menu {
         switch (opcionElegida) {
             case "Crear subasta" -> System.out.println("Crear subasta");
             case "Listar subastas" -> System.out.println("Listar subastas");
-            case "Mis intereses" -> System.out.println("mostrarInteresesUI()");
-            case "Mis objetos" -> System.out.println("mostrarObjtosUI");
+            case "Mis intereses" -> menuIntereses();
+            case "Mis objetos" -> menuObjetos();
             case "Salir" -> {
                     System.out.println("Regresando al menú principal.");
                     System.out.println("¡Regresa pronto, " + usuarioActivo.getNombreCompleto());
@@ -95,6 +96,36 @@ public class Menu {
         }
         opciones.add("Salir");
     }
+
+    //método genérico para listar y/o agregar intereses u objetos
+    //utiliza runnables y es llamado desde menuIntereses y menuObjetos
+    private void menuColeccion(String titulo, Runnable listar,Runnable agregar){
+        boolean salir = false;
+        while(!salir){
+            System.out.println("Mis " + titulo);
+
+            listar.run();
+
+            System.out.println("1) Registrar nuevo.");
+            System.out.println("2) Salir");
+
+            int seleccion = leerEntero();
+
+            switch (seleccion){
+                case 1 -> agregar.run();
+                case 2 -> {
+                    System.out.println("Volviendo a menú de coleccionista.");
+                    salir = true;
+                }
+                default -> opcionInvalida();
+            }
+
+        }
+    }
+
+    //Estos dos métodos llaman a menuColeccion para listar y/o agregar intereses u objetos
+    private void menuIntereses(){menuColeccion("intereses",this::listarInteresesUI,this::agregarInteresUI);}
+    private void menuObjetos(){menuColeccion("objetos",this::listarObjetosUI,this::crearObjetoCollecionistaUI);}
 
     /*
     ========================================================================
@@ -167,11 +198,34 @@ public class Menu {
         System.out.println("Bienvenido " + u.getNombreCompleto());
     }
 
+    private void listarInteresesUI(){
+        Coleccionista col = (Coleccionista) usuarioActivo;
+        List<String> intereses = servuser.listarIntereses(col);
+
+        if (intereses.isEmpty()){
+            System.out.println("No hay intereses registrados aún.");
+            return;
+        }
+        for (int i = 0; i < intereses.size(); i++){
+            System.out.println((i+1) + " - " + intereses.get(i));
+        }
+    }
+
+    private void agregarInteresUI(){
+        Coleccionista col = (Coleccionista) usuarioActivo;
+        String interes = textInput("Ingresa tu interés:");
+        servuser.addIntereses(col,interes);
+    }
+
         /*
     ========================================================================
-    Métodos de servicios de Subastas
+    Métodos de servicios de Subastas y objetos
     ========================================================================
     */
+
+    public void crearSubastaUI(){
+        System.out.println("Por favor ingrese la información para crear su subasta:");
+    }
 
     public void listarSubastasUI(){
         List<Subasta> subastas = servsubasta.listarSubastas();
@@ -182,6 +236,40 @@ public class Menu {
         for (Subasta s : subastas){
             System.out.println(s);
         }
+    }
+    
+    public void listarObjetosUI(){
+        Coleccionista coleccionista = (Coleccionista) usuarioActivo;
+        List<Objeto> objetos = servuser.listarColeccionObjetos(coleccionista);
+        if (objetos.isEmpty()){
+            System.out.println("No hay objetos registrados aún.");
+            return;
+        }
+        for (int i = 0; i < objetos.size();i++){
+            System.out.println((i+1) + " - " + objetos.get(i));
+        }
+    }
+
+    public void crearObjetoCollecionistaUI(){
+        Coleccionista col = (Coleccionista) usuarioActivo;
+        Objeto objeto = crearObjetoUI();
+        servuser.addObjetoColeccion(col,objeto);
+    }
+
+    public void crearObjetoSubastaUI(Subasta subasta){
+        Objeto objeto = crearObjetoUI();
+        servsubasta.crearObjetoSubasta(subasta,objeto);
+    }
+
+    public Objeto crearObjetoUI(){
+        System.out.println("Ingresa los datos para crear tu objeto:");
+        String objNombre = textInput("Nombre del Objeto:");
+        String objDescripcion = textInput("Descripción:");
+        String objEstado = textInput("Condición del objeto:");
+        LocalDate objFecha = dateInput("Fecha original de compra:");
+
+        Objeto objeto = new Objeto(objNombre,objDescripcion,objEstado,objFecha);
+        return objeto;
     }
 
     /*
