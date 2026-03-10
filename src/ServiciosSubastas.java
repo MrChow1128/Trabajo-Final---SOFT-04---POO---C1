@@ -4,19 +4,41 @@ import java.util.List;
 
 public class ServiciosSubastas {
 
-    private List<Subasta> subastas = new ArrayList<>();
+    private List<Subasta> subastas;
+    private ArrayList<Usuario> usuarios;
+    private ArrayList<Orden> ordenes;
 
-    public List<Subasta> listarSubastas() { return List.copyOf(subastas); }
+    public ServiciosSubastas(){
+        usuarios = new ArrayList<>();
+        subastas = new ArrayList<>();
+        ordenes = new ArrayList<>();
+    }
 
-    public void crearSubasta(){
-        Subasta subasta = new Subasta();
+    //métodos para subastas
+    public Subasta crearSubasta(String titulo, Usuario creador){
+        Subasta subasta = new Subasta(titulo, creador);
+        return subasta;
+    }
+
+    public void agregarObjetosSubasta(Subasta subasta, List<Objeto> objetos){
+        for (Objeto o : objetos){
+            subasta.agregarObjeto(o);
+        }
         subastas.add(subasta);
     }
 
-    public void crearObjetoSubasta(Subasta subasta, Objeto objeto){
-        //subasta.agregarObjeto(obj);
+    public List<Subasta> listarSubastas() { return List.copyOf(subastas); }
+
+    //objetos
+    public List<Objeto> listarObjetos(Subasta subasta){return subasta.getObjetos();}
+
+    //ofertas
+    public List<Oferta> listarOfertas(Subasta subasta) {return subasta.getOfertas(); }
+
+    public Oferta hacerOferta(Subasta subasta, Coleccionista coleccionista, double monto){
+        Oferta oferta = new Oferta(coleccionista,monto);
+        subasta.agregarOferta(oferta);
+        return oferta;
     }
-
-
 
 }

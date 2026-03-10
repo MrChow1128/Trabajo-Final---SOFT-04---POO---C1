@@ -1,10 +1,7 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Menu {
     private ServiciosSubastas servsubasta;
@@ -19,7 +16,7 @@ public class Menu {
         this.servuser = servuser;
     }
 
-    public void ejecturar(){
+    public void ejecutar(){
         limpiarPantallaFake();
 
         //crear al moderador antes de iniciar
@@ -79,8 +76,10 @@ public class Menu {
             System.out.println("Usted ha elegido: " + opcionElegida);
 
             switch (opcionElegida) {
-                case "Crear subasta" -> System.out.println("Crear subasta");
-                case "Listar subastas" -> System.out.println("Listar subastas");
+                case "Crear subasta" -> crearSubastaUI();
+                case "Listar subastas" -> {
+                    listarSubastasUI();
+                }
                 case "Mis intereses" -> menuIntereses();
                 case "Mis objetos" -> menuObjetos();
                 case "Salir" -> {
@@ -137,8 +136,49 @@ public class Menu {
     }
 
     //Estos dos métodos llaman a menuColeccion para listar y/o agregar intereses u objetos
-    private void menuIntereses(){menuColeccion("intereses",this::listarInteresesUI,this::agregarInteresUI);}
-    private void menuObjetos(){menuColeccion("objetos",this::listarObjetosUI,this::crearObjetoCollecionistaUI);}
+    private void menuIntereses(){menuColeccion("intereses",this::listarInteresesUI,
+            this::agregarInteresUI);}
+
+    private void menuObjetos(){menuColeccion("objetos",this::listarObjetosColeccionUI,
+            this::crearObjetoCollecionistaUI);}
+
+    /*
+        Despliega la información de la subasta
+        y ofrece al usuario a ver las ofertas
+        y si cumple los requisitos: ofrece agregar su propia oferta
+     */
+    public void menuDetallesSubastaUI(Subasta subasta){
+        System.out.println(subasta);
+
+        opciones.clear();
+        opciones.add("Ver ofertas");
+        if (usuarioActivo instanceof Coleccionista){
+            if (!subasta.getCreador().equals(usuarioActivo)){
+                opciones.add("Hacer una oferta");
+            }
+        }
+        opciones.add("Salir");
+        printOpciones();
+
+        int seleccion = leerEntero();
+        String opcionElegida = opciones.get(seleccion - 1);
+
+        switch (opcionElegida){
+            case "Ver ofertas" -> listarOfertasUI(subasta);
+            case "Hacer una oferta" -> {
+                double monto = leerDouble("Ingrese el monto de la oferta:");
+                Coleccionista coleccionista = (Coleccionista) usuarioActivo;
+                Oferta oferta = servsubasta.hacerOferta(subasta,coleccionista,monto);
+                System.out.println("¡Oferta hecha exitosamente!");
+                System.out.println(oferta);
+            }
+            case "Salir" -> {
+                System.out.println("Regresando a menú.");
+            }
+            default -> opcionInvalida();
+        }
+
+    }
 
     /*
     ========================================================================
@@ -262,7 +302,7 @@ public class Menu {
             }
             System.out.println("Credenciales inválidas.");
             intentos++;
-            System.out.println("Quedan " + (3 - intentos) + "intentos.");
+            System.out.println("Quedan " + (3 - intentos) + " intentos.");
         }
 
         System.out.println("Autenticación fallida.");
@@ -293,9 +333,13 @@ public class Menu {
     Métodos de servicios de Subastas y objetos
     ========================================================================
     */
-
+    //sigue un flow u otro dependiendo del tipo de usuario activo
     public void crearSubastaUI(){
-        System.out.println("Por favor ingrese la información para crear su subasta:");
+        if (usuarioActivo instanceof Vendedor){
+            crearSubastaVendedorUI();
+        } else if (usuarioActivo instanceof Coleccionista) {
+            crearSubastaColeccionista();
+        }
     }
 
     public void listarSubastasUI(){
@@ -306,12 +350,34 @@ public class Menu {
             System.out.println("No hay subastas registradas aún.");
             return;
         }
-        for (Subasta s : subastas){
-            System.out.println(s);
+        for (int i = 0; i < subastas.size();i++){
+            System.out.println((i+1) + " - " +
+                    subastas.get(i).getTitulo() +
+                    " - Objetos subastados: " + subastas.get(i).getObjetos().size() +
+                    " - creada por " + subastas.get(i).getCreador().getNombreCompleto());
         }
+        System.out.println("0 - Volver");
+
+        System.out.println("\nPuede elegir una subasta por su índice o puede elegir volver.\n");
+        int seleccion;
+
+        while (true){
+            seleccion = leerEnteroMensj("Ingrese su elección:");
+            if (seleccion < 0 || seleccion > subastas.size()){
+                opcionInvalida();
+                continue;
+            }
+            break;
+        }
+
+        if (seleccion == 0){return;}
+
+        Subasta seleccionada = subastas.get(seleccion - 1);
+        menuDetallesSubastaUI(seleccionada);
+
     }
     
-    public void listarObjetosUI(){
+    public void listarObjetosColeccionUI(){
         Coleccionista coleccionista = (Coleccionista) usuarioActivo;
         List<Objeto> objetos = servuser.listarColeccionObjetos(coleccionista);
         if (objetos.isEmpty()){
@@ -329,9 +395,88 @@ public class Menu {
         servuser.addObjetoColeccion(col,objeto);
     }
 
-    public void crearObjetoSubastaUI(Subasta subasta){
-        Objeto objeto = crearObjetoUI();
-        servsubasta.crearObjetoSubasta(subasta,objeto);
+    public void crearSubastaVendedorUI(){
+
+        System.out.println("\n\n------Creación de Subastas------");
+        System.out.println("Agreguemos tu primer objeto para la subasta:");
+
+        List<Objeto> objetos = new ArrayList<>();
+
+        while (true) {
+            Objeto objeto = crearObjetoUI();
+            objetos.add(objeto);
+
+            if(!confirmar("¿Agregar otro objeto? [S/N]")){
+                break;
+            };
+        }
+
+        if (objetos.isEmpty()){
+            System.out.println("Debe agregar al menos un objeto");
+            return;
+        }
+
+        System.out.println("\n------Objeto(s) agregado(s) exitosamente------");
+        String titulo = textInput("\nIngrese un título para la subasta:");
+        Subasta subasta = servsubasta.crearSubasta(titulo,usuarioActivo);
+        servsubasta.agregarObjetosSubasta(subasta,objetos);
+        System.out.println("¡Subasta creada exitosamente!\n");
+        System.out.println(subasta);
+    }
+
+    //Crear subasta para coleccionista
+    public void crearSubastaColeccionista(){
+        System.out.println("\n\n------Creación de Subastas------");
+        System.out.println("Escoja al menos un objeto de su colección:");
+        Coleccionista col = (Coleccionista) usuarioActivo;
+        List<Objeto> objetosColeccionista = servuser.listarColeccionObjetos(col);
+
+        //verifica si el coleccionista ya tiene una colección con objetos
+        if (objetosColeccionista.isEmpty()){
+            System.out.println("No tiene objetos en su colección.");
+            return;
+        }
+
+        List<Objeto> objetosSeleccionados = new ArrayList<>();
+
+        while (true){
+
+            //listar objetos del coleccionista
+            for (int i = 0; i < objetosColeccionista.size();i++){
+                System.out.println((i+1) + ". " + objetosColeccionista.get(i));
+            }
+
+            int opcion = leerEnteroMensj("Seleccione un objeto por su índice:");
+
+            //validar que sea una opción válida
+            if (opcion < 1 || opcion > objetosColeccionista.size()){
+                System.out.println("Selección inválida.");
+                continue;
+            }
+            Objeto elegido = objetosColeccionista.get(opcion-1);
+
+            //validar que no haya objetos repetidos
+            if (objetosSeleccionados.contains(elegido)){
+                System.out.println("Este objeto ya fue agregado.");
+                continue;
+            }
+
+            objetosSeleccionados.add(elegido);
+
+            if (objetosSeleccionados.size() == objetosColeccionista.size()){
+                System.out.println("Ya ha agregado todos los objetos de su colección.");
+                break;
+            }
+
+            if (!confirmar("¿Agregar otro objeto? [S/N]")){break;}
+        }
+
+        System.out.println("\n------Objeto(s) agregado(s) exitosamente");
+        String titulo = textInput("\nIngrese un título para la subasta:");
+        Subasta subasta = servsubasta.crearSubasta(titulo,col);
+        servsubasta.agregarObjetosSubasta(subasta,objetosSeleccionados);
+        System.out.println("¡Subasta creada exitosamente!\n");
+        System.out.println(subasta);
     }
 
     public Objeto crearObjetoUI(){
@@ -343,6 +488,23 @@ public class Menu {
 
         Objeto objeto = new Objeto(objNombre,objDescripcion,objEstado,objFecha);
         return objeto;
+    }
+
+    public void listarOfertasUI(Subasta subasta){
+        System.out.println("------Lista de ofertas para subasta: " +
+                subasta.getTitulo() + "------");
+
+        List<Oferta> ofertas = servsubasta.listarOfertas(subasta);
+
+        if (ofertas.isEmpty()){
+            System.out.println("No hay ofertas aún.");
+        }
+
+        for (int i = 0; i < ofertas.size();i++){
+            System.out.println((i+1) + ". Oferente: " +
+                    ofertas.get(i).getOferente().getNombreCompleto() + " | Monto: " +
+                    ofertas.get(i).getMonto() +"\n");
+        }
     }
 
     /*
@@ -376,7 +538,7 @@ public class Menu {
         }
     }
 
-    private int userInputINT (String p){
+    private int leerEnteroMensj (String p){
         while (true) {
             System.out.print(p);
 
@@ -400,10 +562,9 @@ public class Menu {
         }
     }
 
-    private double userInputDouble (String p){
+    private double leerDouble (String p){
         while (true) {
             System.out.print(p);
-
             try {
                 String input = sc.nextLine();
                 return Double.parseDouble(input.trim());
@@ -427,6 +588,18 @@ public class Menu {
             }
         }
         return date;
+    }
+
+    private boolean confirmar(String p){
+        while (true){
+            String resp = textInput(p);
+            if (resp.equalsIgnoreCase("s")){
+                return true;
+            } else if (resp.equalsIgnoreCase("n")) {
+                return false;
+            }
+            System.out.println("Por favor ingrese 's' ó 'n'.");
+        }
     }
 
     /*========================================================================

@@ -87,12 +87,11 @@ public class Objeto {
     // toString
 
     public String toString() {
-        return "Objeto {" +
-                "Nombre='" + nombre + '\'' +
-                ", Descripción='" + descripcion + '\'' +
-                ", Estado='" + estado + '\'' +
-                ", FechaCompra=" + fechaCompra +
-                ", Antigüedad=" + calcularAntiguedad() +
-                '}';
+        return "Objeto:" +
+                "\n\tNombre: " + nombre +
+                "\n\tDescripción: " + descripcion +
+                "\n\tEstado: " + estado +
+                "\n\tFechaCompra: " + fechaCompra +
+                "\n\tAntigüedad: " + calcularAntiguedad();
     }
 }
