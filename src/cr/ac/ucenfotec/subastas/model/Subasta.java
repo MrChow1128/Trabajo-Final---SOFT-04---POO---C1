@@ -1,3 +1,5 @@
+package cr.ac.ucenfotec.subastas.model;
+
 import java.util.ArrayList;
 import java.util.List;
 

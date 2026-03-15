@@ -1,8 +1,10 @@
+package cr.ac.ucenfotec.subastas.servicio;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import cr.ac.ucenfotec.subastas.model.*;
 
 public class ServiciosUsuario {
 

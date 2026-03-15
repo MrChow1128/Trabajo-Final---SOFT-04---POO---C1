@@ -1,17 +1,18 @@
-import java.time.LocalDate;
+package cr.ac.ucenfotec.subastas.servicio;
+
+import cr.ac.ucenfotec.subastas.model.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServiciosSubastas {
 
     private List<Subasta> subastas;
-    private ArrayList<Usuario> usuarios;
-    private ArrayList<Orden> ordenes;
+    //private ArrayList<Orden> ordenes;
 
     public ServiciosSubastas(){
-        usuarios = new ArrayList<>();
         subastas = new ArrayList<>();
-        ordenes = new ArrayList<>();
+        //ordenes = new ArrayList<>();
     }
 
     //métodos para subastas

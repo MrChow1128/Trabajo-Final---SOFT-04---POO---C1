@@ -1,3 +1,5 @@
+package cr.ac.ucenfotec.subastas.model;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 

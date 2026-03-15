@@ -1,7 +1,11 @@
+package cr.ac.ucenfotec.subastas.ui;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import cr.ac.ucenfotec.subastas.servicio.*;
+import cr.ac.ucenfotec.subastas.model.*;
 
 public class Menu {
     private ServiciosSubastas servsubasta;
@@ -17,7 +21,6 @@ public class Menu {
     }
 
     public void ejecutar(){
-        limpiarPantallaFake();
 
         //crear al moderador antes de iniciar
         while (!servuser.adminExiste()){crearModeradorUI();}
@@ -254,7 +257,8 @@ public class Menu {
         }
         System.out.println("\nUsuario(s) en el sistema:");
         for (Usuario u : users){
-            System.out.println(u.getIdentificacion() + " - " + u.getNombreCompleto());
+            System.out.println(u.getIdentificacion() + " - " + u.getNombreCompleto() +
+                    " - " + u.getClass().getSimpleName());
         }
     }
 
@@ -522,10 +526,6 @@ public class Menu {
             System.out.println("Por favor ingrese un valor.");
         }
     }
-
-    //limpia la consola
-    private void limpiarPantallaFake(){ for(int i=0;i<25;i++) System.out.println(); }
-
 
     private String userInput(String p) {
         while (true) {
