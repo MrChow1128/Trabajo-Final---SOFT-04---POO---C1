@@ -23,11 +23,10 @@ El desarrollo aplica principios de **Programación Orientada a Objetos**, incluy
 ---
 ## Arquitectura del sistema
 El sistema sigue una **arquitectura por capas**:
-cr.ac.ucenfotec.subastas
-│
-├─ model: Clases del dominio del sistema
-├─ service: Lógica del negocio
-└─ ui: Interfaz de usuario en consola
+- cr.ac.ucenfotec.subastas
+  - model: Clases del dominio del sistema
+  - service: Lógica del negocio
+  - ui: Interfaz de usuario en consola
 ---
 ## Ejecución del programa
 El programa se ejecuta desde la clase: Main
