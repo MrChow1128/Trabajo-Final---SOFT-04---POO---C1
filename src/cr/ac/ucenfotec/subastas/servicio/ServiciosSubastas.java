@@ -16,16 +16,19 @@ public class ServiciosSubastas {
     }
 
     //métodos para subastas
-    public Subasta crearSubasta(String titulo, Usuario creador){
-        Subasta subasta = new Subasta(titulo, creador);
-        return subasta;
-    }
-
-    public void agregarObjetosSubasta(Subasta subasta, List<Objeto> objetos){
-        for (Objeto o : objetos){
-            subasta.agregarObjeto(o);
+    public Subasta registrarSubasta(String titulo, Usuario creador, List<Objeto> objetos){
+        if (objetos == null || objetos.isEmpty()){
+            throw new IllegalArgumentException("La subasta debe tener al menos un objeto.");
         }
+
+        Subasta subasta = new Subasta(titulo,creador);
+
+        for (Objeto objeto : objetos){
+            subasta.agregarObjeto(objeto);
+        }
+
         subastas.add(subasta);
+        return subasta;
     }
 
     public List<Subasta> listarSubastas() { return List.copyOf(subastas); }

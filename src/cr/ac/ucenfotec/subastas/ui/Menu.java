@@ -1,8 +1,6 @@
 package cr.ac.ucenfotec.subastas.ui;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import cr.ac.ucenfotec.subastas.servicio.*;
 import cr.ac.ucenfotec.subastas.model.*;
@@ -13,11 +11,13 @@ public class Menu {
     private Scanner sc;
     private List<String> opciones = new ArrayList<>();
     private Usuario usuarioActivo;
+    private ConsoleInput input;
 
     public Menu(ServiciosUsuario servuser, ServiciosSubastas servsubasta) {
         this.sc = new Scanner(System.in);
         this.servsubasta = servsubasta;
         this.servuser = servuser;
+        this.input = new ConsoleInput(sc);
     }
 
     public void ejecutar(){
@@ -34,11 +34,11 @@ public class Menu {
             System.out.println("========================================");
             System.out.println("1) Registro de usuarios");
             System.out.println("2) Listado de usuarios");
-            System.out.println("3) Inciar sesión");
+            System.out.println("3) Iniciar sesión");
             System.out.println("4) Listado de subastas");
             System.out.println("5) Salir del programa");
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerEntero();
 
             switch (seleccion){
                 case 1 -> registrarUsuarioUI();
@@ -70,9 +70,9 @@ public class Menu {
         while(true) {
 
             mostrarOpciones();
-            printOpciones();
+            imprimirOpciones();
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerOpcionMenu(opciones.size());
             String opcionElegida = opciones.get(seleccion - 1);
 
             System.out.println("-------------------------------------");
@@ -124,7 +124,7 @@ public class Menu {
             System.out.println("1) Registrar nuevo.");
             System.out.println("2) Salir");
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerEntero();
 
             switch (seleccion){
                 case 1 -> agregar.run();
@@ -143,7 +143,7 @@ public class Menu {
             this::agregarInteresUI);}
 
     private void menuObjetos(){menuColeccion("objetos",this::listarObjetosColeccionUI,
-            this::crearObjetoCollecionistaUI);}
+            this::crearObjetoColeccionistaUI);}
 
     /*
         Despliega la información de la subasta
@@ -161,15 +161,15 @@ public class Menu {
             }
         }
         opciones.add("Salir");
-        printOpciones();
+        imprimirOpciones();
 
-        int seleccion = leerEntero();
+        int seleccion = input.leerOpcionMenu(opciones.size());
         String opcionElegida = opciones.get(seleccion - 1);
 
         switch (opcionElegida){
             case "Ver ofertas" -> listarOfertasUI(subasta);
             case "Hacer una oferta" -> {
-                double monto = leerDouble("Ingrese el monto de la oferta:");
+                double monto = input.leerDouble("Ingrese el monto de la oferta:");
                 Coleccionista coleccionista = (Coleccionista) usuarioActivo;
                 Oferta oferta = servsubasta.hacerOferta(subasta,coleccionista,monto);
                 System.out.println("¡Oferta hecha exitosamente!");
@@ -191,15 +191,15 @@ public class Menu {
 
     public void crearModeradorUI(){
         System.out.println("Para iniciar, por favor ingrese sus datos de moderador:");
-        LocalDate adminDOB = dateInput("Fecha de nacimiento (dd/MM/yyyy):");
+        LocalDate adminDOB = input.leerFecha("Fecha de nacimiento (dd/MM/yyyy):");
         if (!servuser.esMayordeEdad(adminDOB)){
             System.out.println("El moderador debe ser mayor de edad.");
             return;
         }
-        String adminName = textInput("Nombre completo:");
-        String adminId = textInput("Identificación:");
-        String adminEmail = textInput("E-mail:");
-        String adminPw = textInput("Contraseña:");
+        String adminName = input.leerTexto("Nombre completo:");
+        String adminId = input.leerTexto("Identificación:");
+        String adminEmail = input.leerTexto("E-mail:");
+        String adminPw = input.leerTexto("Contraseña:");
 
         servuser.registrarModerador(adminName,adminEmail,adminPw,adminId,adminDOB);
     }
@@ -210,11 +210,11 @@ public class Menu {
         System.out.println("1) Vendedor");
         System.out.println("2) Coleccionista");
 
-        int userType = leerEntero();
+        int userType = input.leerEntero();
 
         System.out.println("Por favor ingrese la información que " +
                 "se le solicita para registrarle.");
-        LocalDate userDOB = dateInput("Fecha de nacimiento (dd/MM/yyyy):");
+        LocalDate userDOB = input.leerFecha("Fecha de nacimiento (dd/MM/yyyy):");
         if (!servuser.esMayordeEdad(userDOB)){
             System.out.println("El usuario debe ser mayor de edad.");
             return;
@@ -225,7 +225,7 @@ public class Menu {
              */
             String userId;
             do{
-                userId = textInput("Identificación (0 para cancelar):");
+                userId = input.leerTexto("Identificación (0 para cancelar):");
 
                 if (userId.equals("0")){
                     System.out.println("¡Proceso cancelado!");
@@ -233,15 +233,15 @@ public class Menu {
                     return;
                 }
 
-                if (servuser.idExist(userId)){
+                if (servuser.existeIdentificacion(userId)){
                     System.out.println("Ya existe un usuario con esta identificación.");
                 }
-            } while(servuser.idExist(userId));
+            } while(servuser.existeIdentificacion(userId));
 
-        String userName = textInput("Nombre completo:");
-        String userEmail = textInput("E-mail:");
-        String userPw = textInput("Contraseña:");
-        String userDir = textInput("Dirección:");
+        String userName = input.leerTexto("Nombre completo:");
+        String userEmail = input.leerTexto("E-mail:");
+        String userPw = input.leerTexto("Contraseña:");
+        String userDir = input.leerTexto("Dirección:");
 
         Usuario user = servuser.registrarUsuario(userName,userEmail,userPw,userId,userDir,userDOB,userType);
         System.out.println("Registrado: " + user);
@@ -277,7 +277,7 @@ public class Menu {
          */
         Usuario u = null;
         while (u == null) {
-            String id = textInput("Identificación (0 para cancelar):");
+            String id = input.leerTexto("Identificación (0 para cancelar):");
 
             if (id.equals("0")){
                 System.out.println("¡Proceso cancelado!");
@@ -285,7 +285,7 @@ public class Menu {
                 return;
             } //permite al usuario salir
 
-            u = servuser.lookupUser(id);
+            u = servuser.buscarUsuario(id);
             if (u == null) {
                 System.out.println("Usuario no encontrado.");
             }
@@ -297,7 +297,7 @@ public class Menu {
          */
         int intentos = 0;
         while (intentos < 3){
-            String pw = textInput("Contraseña:");
+            String pw = input.leerTexto("Contraseña:");
             if (servuser.autenticarUsuario(u, pw)) {
                 usuarioActivo = u;
                 System.out.println("\n\n------¡Iniciar de sesión exitoso!------");
@@ -328,8 +328,8 @@ public class Menu {
 
     private void agregarInteresUI(){
         Coleccionista col = (Coleccionista) usuarioActivo;
-        String interes = textInput("Ingresa tu interés:");
-        servuser.addIntereses(col,interes);
+        String interes = input.leerTexto("Ingresa tu interés:");
+        servuser.agregarInteres(col,interes);
     }
 
         /*
@@ -342,7 +342,7 @@ public class Menu {
         if (usuarioActivo instanceof Vendedor){
             crearSubastaVendedorUI();
         } else if (usuarioActivo instanceof Coleccionista) {
-            crearSubastaColeccionista();
+            crearSubastaColeccionistaUI();
         }
     }
 
@@ -366,7 +366,7 @@ public class Menu {
         int seleccion;
 
         while (true){
-            seleccion = leerEnteroMensj("Ingrese su elección:");
+            seleccion = input.leerEnteroMensj("Ingrese su elección:");
             if (seleccion < 0 || seleccion > subastas.size()){
                 opcionInvalida();
                 continue;
@@ -393,10 +393,10 @@ public class Menu {
         }
     }
 
-    public void crearObjetoCollecionistaUI(){
+    public void crearObjetoColeccionistaUI(){
         Coleccionista col = (Coleccionista) usuarioActivo;
         Objeto objeto = crearObjetoUI();
-        servuser.addObjetoColeccion(col,objeto);
+        servuser.agregarObjetoAColeccion(col,objeto);
     }
 
     public void crearSubastaVendedorUI(){
@@ -410,7 +410,7 @@ public class Menu {
             Objeto objeto = crearObjetoUI();
             objetos.add(objeto);
 
-            if(!confirmar("¿Agregar otro objeto? [S/N]")){
+            if(!input.confirmar("¿Agregar otro objeto? [S/N]")){
                 break;
             };
         }
@@ -421,15 +421,14 @@ public class Menu {
         }
 
         System.out.println("\n------Objeto(s) agregado(s) exitosamente------");
-        String titulo = textInput("\nIngrese un título para la subasta:");
-        Subasta subasta = servsubasta.crearSubasta(titulo,usuarioActivo);
-        servsubasta.agregarObjetosSubasta(subasta,objetos);
+        String titulo = input.leerTexto("\nIngrese un título para la subasta:");
+        Subasta subasta = servsubasta.registrarSubasta(titulo,usuarioActivo,objetos);
         System.out.println("¡Subasta creada exitosamente!\n");
         System.out.println(subasta);
     }
 
     //Crear subasta para coleccionista
-    public void crearSubastaColeccionista(){
+    public void crearSubastaColeccionistaUI(){
         System.out.println("\n\n------Creación de Subastas------");
         System.out.println("Escoja al menos un objeto de su colección:");
         Coleccionista col = (Coleccionista) usuarioActivo;
@@ -450,7 +449,7 @@ public class Menu {
                 System.out.println((i+1) + ". " + objetosColeccionista.get(i));
             }
 
-            int opcion = leerEnteroMensj("Seleccione un objeto por su índice:");
+            int opcion = input.leerEnteroMensj("Seleccione un objeto por su índice:");
 
             //validar que sea una opción válida
             if (opcion < 1 || opcion > objetosColeccionista.size()){
@@ -472,23 +471,22 @@ public class Menu {
                 break;
             }
 
-            if (!confirmar("¿Agregar otro objeto? [S/N]")){break;}
+            if (!input.confirmar("¿Agregar otro objeto? [S/N]")){break;}
         }
 
         System.out.println("\n------Objeto(s) agregado(s) exitosamente");
-        String titulo = textInput("\nIngrese un título para la subasta:");
-        Subasta subasta = servsubasta.crearSubasta(titulo,col);
-        servsubasta.agregarObjetosSubasta(subasta,objetosSeleccionados);
+        String titulo = input.leerTexto("\nIngrese un título para la subasta:");
+        Subasta subasta = servsubasta.registrarSubasta(titulo,col,objetosSeleccionados);
         System.out.println("¡Subasta creada exitosamente!\n");
         System.out.println(subasta);
     }
 
     public Objeto crearObjetoUI(){
         System.out.println("Ingresa los datos para crear tu objeto:");
-        String objNombre = textInput("Nombre del Objeto:");
-        String objDescripcion = textInput("Descripción:");
-        String objEstado = textInput("Condición del objeto:");
-        LocalDate objFecha = dateInput("Fecha original de compra:");
+        String objNombre = input.leerTexto("Nombre del Objeto:");
+        String objDescripcion = input.leerTexto("Descripción:");
+        String objEstado = input.leerTexto("Condición del objeto:");
+        LocalDate objFecha = input.leerFecha("Fecha original de compra:");
 
         Objeto objeto = new Objeto(objNombre,objDescripcion,objEstado,objFecha);
         return objeto;
@@ -511,111 +509,19 @@ public class Menu {
         }
     }
 
-    /*
-    ========================================================================
-    Lectores
-    ========================================================================
-    */
-
-    //String input
-    private String textInput(String p){
-        while(true){
-            System.out.println(p);
-            String s = sc.nextLine().trim();
-            if (!s.isEmpty()) return s;
-            System.out.println("Por favor ingrese un valor.");
-        }
-    }
-
-    private String userInput(String p) {
-        while (true) {
-            System.out.println(p);
-            String s = sc.nextLine();
-            if (!s.isEmpty()){
-                return s;
-            } else
-                System.out.println("Por favor, ingrese un valor.");
-        }
-    }
-
-    private int leerEnteroMensj (String p){
-        while (true) {
-            System.out.print(p);
-
-            try {
-                String input = sc.nextLine();
-                return Integer.parseInt(input.trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Por favor, ingrese un número válido.");
-            }
-        }
-    }
-
-    private int leerEntero(){
-        while (true) {
-            try {
-                String s = sc.nextLine();
-                return Integer.parseInt(s.trim());
-            } catch (NumberFormatException e) {
-                System.out.print("Ingrese un número válido: ");
-            }
-        }
-    }
-
-    private double leerDouble (String p){
-        while (true) {
-            System.out.print(p);
-            try {
-                String input = sc.nextLine();
-                return Double.parseDouble(input.trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Por favor, ingrese un número válido.");
-            }
-        }
-    }
-
-    //lee un string, formatea, y devuelve una fecha
-    private LocalDate dateInput(String p){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate date = null;
-
-        while (date == null){
-            try{
-                String rawDate = userInput(p);
-                date = LocalDate.parse(rawDate, formatter);
-            } catch (DateTimeParseException e){
-                System.out.println("Formato inválido; por favor use dd/MM/yyyy.");
-            }
-        }
-        return date;
-    }
-
-    private boolean confirmar(String p){
-        while (true){
-            String resp = textInput(p);
-            if (resp.equalsIgnoreCase("s")){
-                return true;
-            } else if (resp.equalsIgnoreCase("n")) {
-                return false;
-            }
-            System.out.println("Por favor ingrese 's' ó 'n'.");
-        }
-    }
-
     /*========================================================================
     Otros métodos
     ========================================================================
     */
 
     //imprime el array de opciones para desplegar un menú más dinámico
-    private void printOpciones(){
+    private void imprimirOpciones(){
         for (int i = 0; i < opciones.size();i++){
             System.out.println((i+1) + ") " + opciones.get(i));
         }
     }
 
-    private void opcionInvalida() {
-        System.out.println("Opción inválida.");
+    private void opcionInvalida() {System.out.println("Opción inválida.");
     }
 
     }

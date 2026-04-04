@@ -42,7 +42,7 @@ public class ServiciosUsuario {
         return List.copyOf(users);
     }
 
-    public Usuario lookupUser(String id){
+    public Usuario buscarUsuario(String id){
         for (Usuario u : users){
             if (u.getIdentificacion().equals(id)){
                 return u;
@@ -51,7 +51,7 @@ public class ServiciosUsuario {
         return null;
     }
 
-    public boolean idExist(String id){
+    public boolean existeIdentificacion(String id){
         for (Usuario u : users){
             if(u.getIdentificacion().equals(id)){
                 return true;
@@ -65,19 +65,15 @@ public class ServiciosUsuario {
     }
 
     //métodos para atributos de usuarios
-    public void addIntereses(Coleccionista coleccionista, String interes) {
+    public void agregarInteres(Coleccionista coleccionista, String interes) {
         coleccionista.agregarInteres(interes);
-    }
-
-    public void addObjeto(Coleccionista coleccionista, Objeto objeto) {
-        coleccionista.agregarObjeto(objeto);
     }
 
     public List<Objeto> listarColeccionObjetos(Coleccionista coleccionista) {
         return List.copyOf(coleccionista.getObjetosPropios());
     }
 
-    public void addObjetoColeccion(Coleccionista coleccionista, Objeto objeto) {
+    public void agregarObjetoAColeccion(Coleccionista coleccionista, Objeto objeto) {
         coleccionista.agregarObjeto(objeto);
     }
 
