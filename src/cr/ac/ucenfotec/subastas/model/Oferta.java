@@ -1,18 +1,24 @@
 package cr.ac.ucenfotec.subastas.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Oferta {
 
+    // Atributos
+
     private Coleccionista oferente;
     private double monto;
-    private Date fecha;
+    private LocalDateTime fecha;
+
+    // Constructor
 
     public Oferta(Coleccionista oferente, double monto) {
         this.oferente = oferente;
         this.monto = monto;
-        this.fecha = new Date();
+        this.fecha = LocalDateTime.now();
     }
+
+    // Getters y Setters
 
     public Coleccionista getOferente() {
         return oferente;
@@ -30,18 +36,31 @@ public class Oferta {
         this.monto = monto;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 
+    // equals (sin override, estilo visto en clase)
+
     public boolean equals(Oferta otra) {
-        return this.oferente.equals(otra.oferente) && this.monto == otra.monto;
+        if (otra == null) {
+            return false;
+        }
+
+        if (this.oferente == null || otra.getOferente() == null) {
+            return false;
+        }
+
+        return this.oferente.equals(otra.getOferente()) &&
+                this.monto == otra.getMonto();
     }
+
+    // toString
 
     public String toString() {
         return "Oferta" +
                 "\n\tOferente: " + oferente.getNombreCompleto() +
                 "\n\tMonto ofertado: " + monto +
-                "\n\tfecha:" + fecha;
+                "\n\tFecha: " + fecha;
     }
 }

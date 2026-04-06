@@ -3,7 +3,6 @@ package cr.ac.ucenfotec.subastas.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-
 public class Coleccionista extends Usuario {
 
     // Atributos propios
@@ -17,8 +16,8 @@ public class Coleccionista extends Usuario {
 
     public Coleccionista() {
         super();
-        listaIntereses = new ArrayList<>();
-        objetosPropios = new ArrayList<>();
+        this.listaIntereses = new ArrayList<>();
+        this.objetosPropios = new ArrayList<>();
     }
 
     public Coleccionista(String nombreCompleto, String identificacion,
@@ -26,23 +25,31 @@ public class Coleccionista extends Usuario {
                          String correoElectronico,
                          double puntuacion, String direccion) {
 
-        super(nombreCompleto, identificacion, fechaNacimiento,
-                contrasena, correoElectronico);
-
+        super(nombreCompleto, identificacion, fechaNacimiento, contrasena, correoElectronico);
         this.puntuacion = puntuacion;
         this.direccion = direccion;
         this.listaIntereses = new ArrayList<>();
         this.objetosPropios = new ArrayList<>();
     }
 
+    // Método polimórfico
+
+    public String getTipoUsuario() {
+        return "Coleccionista";
+    }
+
     // Métodos propios
 
     public void agregarInteres(String interes) {
-        listaIntereses.add(interes);
+        if (interes != null && !interes.trim().isEmpty()) {
+            listaIntereses.add(interes);
+        }
     }
 
     public void agregarObjeto(Objeto objeto) {
-        objetosPropios.add(objeto);
+        if (objeto != null) {
+            objetosPropios.add(objeto);
+        }
     }
 
     // Getters y Setters
@@ -83,8 +90,8 @@ public class Coleccionista extends Usuario {
 
     public String toString() {
         return "Coleccionista {" + super.toString() +
-                ", Puntuación=" + puntuacion +
-                ", Dirección='" + direccion + '\'' +
+                ", Puntuacion=" + puntuacion +
+                ", Direccion='" + direccion + '\'' +
                 ", Intereses=" + listaIntereses +
                 ", CantidadObjetos=" + objetosPropios.size() +
                 "}";

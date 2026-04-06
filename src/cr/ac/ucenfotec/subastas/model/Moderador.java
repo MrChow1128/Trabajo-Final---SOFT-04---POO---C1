@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 public class Moderador extends Usuario {
 
-
     // Constructores
 
     public Moderador() {
@@ -14,9 +13,13 @@ public class Moderador extends Usuario {
     public Moderador(String nombreCompleto, String identificacion,
                      LocalDate fechaNacimiento, String contrasena,
                      String correoElectronico) {
+        super(nombreCompleto, identificacion, fechaNacimiento, contrasena, correoElectronico);
+    }
 
-        super(nombreCompleto, identificacion, fechaNacimiento,
-                contrasena, correoElectronico);
+    // Método polimórfico
+
+    public String getTipoUsuario() {
+        return "Moderador";
     }
 
     // toString

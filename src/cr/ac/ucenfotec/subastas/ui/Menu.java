@@ -1,60 +1,73 @@
 package cr.ac.ucenfotec.subastas.ui;
 
+import cr.ac.ucenfotec.subastas.model.Coleccionista;
+import cr.ac.ucenfotec.subastas.model.Objeto;
+import cr.ac.ucenfotec.subastas.model.Oferta;
+import cr.ac.ucenfotec.subastas.model.Subasta;
+import cr.ac.ucenfotec.subastas.model.Usuario;
+import cr.ac.ucenfotec.subastas.model.Vendedor;
+import cr.ac.ucenfotec.subastas.servicio.ServiciosSubastas;
+import cr.ac.ucenfotec.subastas.servicio.ServiciosUsuario;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import cr.ac.ucenfotec.subastas.servicio.*;
-import cr.ac.ucenfotec.subastas.model.*;
+import java.util.ArrayList;
 
 public class Menu {
-    private ServiciosSubastas servsubasta;
-    private ServiciosUsuario servuser;
-    private Scanner sc;
-    private List<String> opciones = new ArrayList<>();
-    private Usuario usuarioActivo;
 
-    public Menu(ServiciosUsuario servuser, ServiciosSubastas servsubasta) {
-        this.sc = new Scanner(System.in);
-        this.servsubasta = servsubasta;
-        this.servuser = servuser;
+    private ServiciosSubastas servSubasta;
+    private ServiciosUsuario servUsuario;
+    private Usuario usuarioActivo;
+    private ConsoleInput input;
+    private ArrayList<String> opciones;
+
+    public Menu(ServiciosUsuario servUsuario, ServiciosSubastas servSubasta) {
+        this.servUsuario = servUsuario;
+        this.servSubasta = servSubasta;
+        this.usuarioActivo = null;
+        this.input = new ConsoleInput();
+        this.opciones = new ArrayList<String>();
     }
 
-    public void ejecutar(){
-
-        //crear al moderador antes de iniciar
-        while (!servuser.adminExiste()){crearModeradorUI();}
+    public void ejecutar() {
+        servUsuario.registrarModeradorDefault();
 
         boolean salir = false;
 
-        while (!salir){
-
-            System.out.println("========================================");
+        while (!salir) {
+            System.out.println("\n========================================");
             System.out.println("   Sistema de Subastas - Menú Consola");
             System.out.println("========================================");
             System.out.println("1) Registro de usuarios");
             System.out.println("2) Listado de usuarios");
-            System.out.println("3) Inciar sesión");
+            System.out.println("3) Iniciar sesión");
             System.out.println("4) Listado de subastas");
             System.out.println("5) Salir del programa");
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerEntero("Seleccione una opción:");
 
-            switch (seleccion){
-                case 1 -> registrarUsuarioUI();
-                case 2 -> listarUsuariosUI();
-                case 3 -> {
+            switch (seleccion) {
+                case 1:
+                    registrarUsuarioUI();
+                    break;
+                case 2:
+                    listarUsuariosUI();
+                    break;
+                case 3:
                     loginUsuarioUI();
-                    if (usuarioActivo != null){
+                    if (usuarioActivo != null) {
                         menuUsuarios();
                     }
-                }
-                case 4 -> listarSubastasUI();
-                case 5 -> {
+                    break;
+                case 4:
+                    listarSubastasUI();
+                    break;
+                case 5:
                     salir = true;
                     System.out.println("Saliendo del sistema. ¡Adiós!");
-                }
-                default -> opcionInvalida();
+                    break;
+                default:
+                    opcionInvalida();
+                    break;
             }
         }
     }
@@ -66,121 +79,163 @@ public class Menu {
     */
 
     private void menuUsuarios() {
-
-        while(true) {
-
+        while (true) {
             mostrarOpciones();
-            printOpciones();
+            imprimirOpciones();
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerEntero("Seleccione una opción:");
+
+            if (seleccion < 1 || seleccion > opciones.size()) {
+                opcionInvalida();
+                continue;
+            }
+
             String opcionElegida = opciones.get(seleccion - 1);
 
             System.out.println("-------------------------------------");
             System.out.println("Usted ha elegido: " + opcionElegida);
 
             switch (opcionElegida) {
-                case "Crear subasta" -> crearSubastaUI();
-                case "Listar subastas" -> {
+                case "Crear subasta":
+                    crearSubastaUI();
+                    break;
+                case "Listar subastas":
                     listarSubastasUI();
-                }
-                case "Mis intereses" -> menuIntereses();
-                case "Mis objetos" -> menuObjetos();
-                case "Salir" -> {
+                    break;
+                case "Mis intereses":
+                    menuIntereses();
+                    break;
+                case "Mis objetos":
+                    menuObjetos();
+                    break;
+                case "Salir":
                     System.out.println("\n¡Regresa pronto, " + usuarioActivo.getNombreCompleto() + "!");
-                    System.out.println("\n\nRegresando al menú principal.");
+                    System.out.println("Regresando al menú principal.");
                     usuarioActivo = null;
                     return;
-                }
-                default -> opcionInvalida();
+                default:
+                    opcionInvalida();
+                    break;
             }
         }
-        }
+    }
 
-    //interactúa con método printOpciones para desplegar opciones dinámicamente
-    //respondiendo al tipo de usuario activo
-    private void mostrarOpciones(){
+    private void mostrarOpciones() {
         opciones.clear();
+
         System.out.println("\nUsuario activo: " +
                 usuarioActivo.getNombreCompleto() +
-                " (" + usuarioActivo.getClass().getSimpleName() + ")");
+                " (" + usuarioActivo.getTipoUsuario() + ")");
+
         opciones.add("Crear subasta");
         opciones.add("Listar subastas");
-        if (usuarioActivo instanceof Coleccionista){
+
+        if (usuarioActivo instanceof Coleccionista) {
             opciones.add("Mis intereses");
             opciones.add("Mis objetos");
         }
+
         opciones.add("Salir");
     }
 
-    //método genérico para listar y/o agregar intereses u objetos
-    //utiliza runnables y es llamado desde menuIntereses y menuObjetos
-    private void menuColeccion(String titulo, Runnable listar,Runnable agregar){
+    private void menuColeccion(String titulo, Runnable listar, Runnable agregar) {
         boolean salir = false;
-        while(!salir){
-            System.out.println("Mis " + titulo);
 
+        while (!salir) {
+            System.out.println("\nMis " + titulo);
             listar.run();
 
-            System.out.println("1) Registrar nuevo.");
+            System.out.println("1) Registrar nuevo");
             System.out.println("2) Salir");
 
-            int seleccion = leerEntero();
+            int seleccion = input.leerEntero("Seleccione una opción:");
 
-            switch (seleccion){
-                case 1 -> agregar.run();
-                case 2 -> {
-                    System.out.println("Volviendo a menú de coleccionista.");
+            switch (seleccion) {
+                case 1:
+                    agregar.run();
+                    break;
+                case 2:
+                    System.out.println("Volviendo al menú de coleccionista.");
                     salir = true;
-                }
-                default -> opcionInvalida();
+                    break;
+                default:
+                    opcionInvalida();
+                    break;
             }
-
         }
     }
 
-    //Estos dos métodos llaman a menuColeccion para listar y/o agregar intereses u objetos
-    private void menuIntereses(){menuColeccion("intereses",this::listarInteresesUI,
-            this::agregarInteresUI);}
+    private void menuIntereses() {
+        menuColeccion("intereses", new Runnable() {
+            public void run() {
+                listarInteresesUI();
+            }
+        }, new Runnable() {
+            public void run() {
+                agregarInteresUI();
+            }
+        });
+    }
 
-    private void menuObjetos(){menuColeccion("objetos",this::listarObjetosColeccionUI,
-            this::crearObjetoCollecionistaUI);}
+    private void menuObjetos() {
+        menuColeccion("objetos", new Runnable() {
+            public void run() {
+                listarObjetosColeccionUI();
+            }
+        }, new Runnable() {
+            public void run() {
+                crearObjetoColeccionistaUI();
+            }
+        });
+    }
 
-    /*
-        Despliega la información de la subasta
-        y ofrece al usuario a ver las ofertas
-        y si cumple los requisitos: ofrece agregar su propia oferta
-     */
-    public void menuDetallesSubastaUI(Subasta subasta){
-        System.out.println(subasta);
+    public void menuDetallesSubastaUI(Subasta subasta) {
+        System.out.println("\n" + subasta);
 
         opciones.clear();
         opciones.add("Ver ofertas");
-        if (usuarioActivo instanceof Coleccionista){
-            if (!subasta.getCreador().equals(usuarioActivo)){
+
+        if (usuarioActivo instanceof Coleccionista) {
+            if (!subasta.getCreador().equals((Coleccionista) usuarioActivo)) {
                 opciones.add("Hacer una oferta");
             }
         }
+
         opciones.add("Salir");
-        printOpciones();
+        imprimirOpciones();
 
-        int seleccion = leerEntero();
-        String opcionElegida = opciones.get(seleccion - 1);
+        int seleccion = input.leerEntero("Seleccione una opción:");
 
-        switch (opcionElegida){
-            case "Ver ofertas" -> listarOfertasUI(subasta);
-            case "Hacer una oferta" -> {
-                double monto = leerDouble("Ingrese el monto de la oferta:");
-                Coleccionista coleccionista = (Coleccionista) usuarioActivo;
-                Oferta oferta = servsubasta.hacerOferta(subasta,coleccionista,monto);
-                System.out.println("¡Oferta hecha exitosamente!");
-                System.out.println(oferta);
-            }
-            case "Salir" -> {
-                System.out.println("Regresando a menú.");
-            }
-            default -> opcionInvalida();
+        if (seleccion < 1 || seleccion > opciones.size()) {
+            opcionInvalida();
+            return;
         }
 
+        String opcionElegida = opciones.get(seleccion - 1);
+
+        switch (opcionElegida) {
+            case "Ver ofertas":
+                listarOfertasUI(subasta);
+                break;
+            case "Hacer una oferta":
+                double monto = input.leerDouble("Ingrese el monto de la oferta:");
+                Coleccionista coleccionista = (Coleccionista) usuarioActivo;
+
+                try {
+                    Oferta oferta = servSubasta.hacerOferta(subasta, coleccionista, monto);
+                    System.out.println("¡Oferta hecha exitosamente!");
+                    System.out.println(oferta);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
+                }
+                break;
+            case "Salir":
+                System.out.println("Regresando al menú.");
+                break;
+            default:
+                opcionInvalida();
+                break;
+        }
     }
 
     /*
@@ -189,433 +244,351 @@ public class Menu {
     ========================================================================
     */
 
-    public void crearModeradorUI(){
-        System.out.println("Para iniciar, por favor ingrese sus datos de moderador:");
-        LocalDate adminDOB = dateInput("Fecha de nacimiento (dd/MM/yyyy):");
-        if (!servuser.esMayordeEdad(adminDOB)){
-            System.out.println("El moderador debe ser mayor de edad.");
-            return;
-        }
-        String adminName = textInput("Nombre completo:");
-        String adminId = textInput("Identificación:");
-        String adminEmail = textInput("E-mail:");
-        String adminPw = textInput("Contraseña:");
-
-        servuser.registrarModerador(adminName,adminEmail,adminPw,adminId,adminDOB);
-    }
-
-    public void registrarUsuarioUI(){
-        System.out.println("\n\n------Registro de usuario------");
-        System.out.println("\nSeleccione el tipo de usuario que desea registrar:");
+    public void registrarUsuarioUI() {
+        System.out.println("\n------Registro de usuario------");
+        System.out.println("Seleccione el tipo de usuario que desea registrar:");
         System.out.println("1) Vendedor");
         System.out.println("2) Coleccionista");
 
-        int userType = leerEntero();
+        int opcionTipo = input.leerEntero("Ingrese una opción:");
 
-        System.out.println("Por favor ingrese la información que " +
-                "se le solicita para registrarle.");
-        LocalDate userDOB = dateInput("Fecha de nacimiento (dd/MM/yyyy):");
-        if (!servuser.esMayordeEdad(userDOB)){
-            System.out.println("El usuario debe ser mayor de edad.");
+        String tipoUsuario;
+        if (opcionTipo == 1) {
+            tipoUsuario = "Vendedor";
+        } else if (opcionTipo == 2) {
+            tipoUsuario = "Coleccionista";
+        } else {
+            System.out.println("Tipo de usuario inválido.");
             return;
         }
-            /*
-                entra un loop para verificar que la identificación ingresada
-                no sea repetida
-             */
-            String userId;
-            do{
-                userId = textInput("Identificación (0 para cancelar):");
 
-                if (userId.equals("0")){
-                    System.out.println("¡Proceso cancelado!");
-                    System.out.println("Regresando al menú");
-                    return;
-                }
+        System.out.println("\nIngrese la información solicitada:");
+        LocalDate fechaNacimiento = input.leerFecha("Fecha de nacimiento (yyyy-MM-dd):");
 
-                if (servuser.idExist(userId)){
-                    System.out.println("Ya existe un usuario con esta identificación.");
-                }
-            } while(servuser.idExist(userId));
+        String identificacion = input.leerTexto("Identificación (0 para cancelar):");
+        if (identificacion.equals("0")) {
+            System.out.println("Proceso cancelado.");
+            return;
+        }
 
-        String userName = textInput("Nombre completo:");
-        String userEmail = textInput("E-mail:");
-        String userPw = textInput("Contraseña:");
-        String userDir = textInput("Dirección:");
+        String nombre = input.leerTexto("Nombre completo:");
+        String correo = input.leerTexto("E-mail:");
+        String contrasena = input.leerTexto("Contraseña:");
+        String direccion = input.leerTexto("Dirección:");
 
-        Usuario user = servuser.registrarUsuario(userName,userEmail,userPw,userId,userDir,userDOB,userType);
-        System.out.println("Registrado: " + user);
+        try {
+            Usuario user = servUsuario.registrarUsuario(
+                    nombre,
+                    correo,
+                    contrasena,
+                    identificacion,
+                    direccion,
+                    fechaNacimiento,
+                    tipoUsuario
+            );
+            System.out.println("Registrado exitosamente:");
+            System.out.println(user);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private void listarUsuariosUI(){
+    private void listarUsuariosUI() {
+        System.out.println("\n------Lista de usuarios------");
+        ArrayList<Usuario> usuarios = servUsuario.listarUsuarios();
 
-        System.out.println("\n\n------Lista de usuarios------");
-        List<Usuario> users = servuser.listarUsuarios();
-        if (users.isEmpty()){
+        if (usuarios.isEmpty()) {
             System.out.println("No hay usuarios registrados aún.");
             return;
         }
-        System.out.println("\nUsuario(s) en el sistema:");
-        for (Usuario u : users){
-            System.out.println(u.getIdentificacion() + " - " + u.getNombreCompleto() +
-                    " - " + u.getClass().getSimpleName());
+
+        for (Usuario u : usuarios) {
+            System.out.println(u.getIdentificacion() + " - " +
+                    u.getNombreCompleto() + " - " +
+                    u.getTipoUsuario());
         }
     }
 
-    //permite iniciar sesión como un usuario
     private void loginUsuarioUI() {
+        System.out.println("\n------Iniciar sesión------");
 
-        System.out.println("\n\n------Iniciar sesión como usuario------");
-        //primero verifica que haya usuarios para login
-        if (servuser.listarUsuarios().isEmpty()){
+        ArrayList<Usuario> usuarios = servUsuario.listarUsuarios();
+        if (usuarios.isEmpty()) {
             System.out.println("No hay usuarios registrados aún.");
             return;
         }
-        /*
-        Entra un loop para validar que la id ingresada
-        exista para poder habilitar el inicio de sesión
-         */
-        Usuario u = null;
-        while (u == null) {
-            String id = textInput("Identificación (0 para cancelar):");
 
-            if (id.equals("0")){
-                System.out.println("¡Proceso cancelado!");
-                System.out.println("Regresando al menú");
+        String identificacion = input.leerTexto("Identificación:");
+        String contrasena = input.leerTexto("Contraseña:");
+
+        for (Usuario usuario : usuarios) {
+            if (usuario.getIdentificacion().equals(identificacion) &&
+                    usuario.getContrasena().equals(contrasena)) {
+                usuarioActivo = usuario;
+                System.out.println("Inicio de sesión exitoso. ¡Bienvenido " +
+                        usuario.getNombreCompleto() + "!");
                 return;
-            } //permite al usuario salir
-
-            u = servuser.lookupUser(id);
-            if (u == null) {
-                System.out.println("Usuario no encontrado.");
             }
         }
 
-        /*
-        Entra en loop para autenticación.
-        Limita intentos a 3
-         */
-        int intentos = 0;
-        while (intentos < 3){
-            String pw = textInput("Contraseña:");
-            if (servuser.autenticarUsuario(u, pw)) {
-                usuarioActivo = u;
-                System.out.println("\n\n------¡Iniciar de sesión exitoso!------");
-                System.out.println("¡Bienvenido " + u.getNombreCompleto() + "!");
-                return;
-            }
-            System.out.println("Credenciales inválidas.");
-            intentos++;
-            System.out.println("Quedan " + (3 - intentos) + " intentos.");
-        }
-
-        System.out.println("Autenticación fallida.");
-        System.out.println("Regresando al menú principal.");
+        System.out.println("Credenciales inválidas.");
     }
 
-    private void listarInteresesUI(){
+    private void listarInteresesUI() {
         Coleccionista col = (Coleccionista) usuarioActivo;
-        List<String> intereses = servuser.listarIntereses(col);
+        ArrayList<String> intereses = col.getListaIntereses();
 
-        if (intereses.isEmpty()){
+        if (intereses.isEmpty()) {
             System.out.println("No hay intereses registrados aún.");
             return;
         }
-        for (int i = 0; i < intereses.size(); i++){
-            System.out.println((i+1) + " - " + intereses.get(i));
+
+        for (int i = 0; i < intereses.size(); i++) {
+            System.out.println((i + 1) + " - " + intereses.get(i));
         }
     }
 
-    private void agregarInteresUI(){
+    private void agregarInteresUI() {
         Coleccionista col = (Coleccionista) usuarioActivo;
-        String interes = textInput("Ingresa tu interés:");
-        servuser.addIntereses(col,interes);
+        String interes = input.leerTexto("Ingresa tu interés:");
+        col.agregarInteres(interes);
+        System.out.println("Interés agregado correctamente.");
     }
 
-        /*
+    /*
     ========================================================================
     Métodos de servicios de Subastas y objetos
     ========================================================================
     */
-    //sigue un flow u otro dependiendo del tipo de usuario activo
-    public void crearSubastaUI(){
-        if (usuarioActivo instanceof Vendedor){
+
+    public void crearSubastaUI() {
+        if (usuarioActivo instanceof Vendedor) {
             crearSubastaVendedorUI();
         } else if (usuarioActivo instanceof Coleccionista) {
-            crearSubastaColeccionista();
+            crearSubastaColeccionistaUI();
         }
     }
 
-    public void listarSubastasUI(){
-        System.out.println("\n\n------Lista de Subastas------");
+    public void listarSubastasUI() {
+        System.out.println("\n------Lista de Subastas------");
 
-        List<Subasta> subastas = servsubasta.listarSubastas();
-        if (subastas.isEmpty()){
+        ArrayList<Subasta> subastas = servSubasta.listarSubastas();
+
+        if (subastas.isEmpty()) {
             System.out.println("No hay subastas registradas aún.");
             return;
         }
-        for (int i = 0; i < subastas.size();i++){
-            System.out.println((i+1) + " - " +
+
+        for (int i = 0; i < subastas.size(); i++) {
+            System.out.println((i + 1) + " - " +
                     subastas.get(i).getTitulo() +
                     " - Objetos subastados: " + subastas.get(i).getObjetos().size() +
                     " - creada por " + subastas.get(i).getCreador().getNombreCompleto());
         }
+
         System.out.println("0 - Volver");
+        int seleccion = input.leerEntero("Ingrese su elección:");
 
-        System.out.println("\nPuede elegir una subasta por su índice o puede elegir volver.\n");
-        int seleccion;
-
-        while (true){
-            seleccion = leerEnteroMensj("Ingrese su elección:");
-            if (seleccion < 0 || seleccion > subastas.size()){
-                opcionInvalida();
-                continue;
-            }
-            break;
+        if (seleccion == 0) {
+            return;
         }
 
-        if (seleccion == 0){return;}
+        if (seleccion < 1 || seleccion > subastas.size()) {
+            opcionInvalida();
+            return;
+        }
 
         Subasta seleccionada = subastas.get(seleccion - 1);
         menuDetallesSubastaUI(seleccionada);
-
     }
-    
-    public void listarObjetosColeccionUI(){
+
+    public void listarObjetosColeccionUI() {
         Coleccionista coleccionista = (Coleccionista) usuarioActivo;
-        List<Objeto> objetos = servuser.listarColeccionObjetos(coleccionista);
-        if (objetos.isEmpty()){
+        ArrayList<Objeto> objetos = coleccionista.getObjetosPropios();
+
+        if (objetos.isEmpty()) {
             System.out.println("No hay objetos registrados aún.");
             return;
         }
-        for (int i = 0; i < objetos.size();i++){
-            System.out.println((i+1) + " - " + objetos.get(i));
+
+        for (int i = 0; i < objetos.size(); i++) {
+            System.out.println((i + 1) + " - " + objetos.get(i));
         }
     }
 
-    public void crearObjetoCollecionistaUI(){
+    public void crearObjetoColeccionistaUI() {
         Coleccionista col = (Coleccionista) usuarioActivo;
         Objeto objeto = crearObjetoUI();
-        servuser.addObjetoColeccion(col,objeto);
-    }
 
-    public void crearSubastaVendedorUI(){
-
-        System.out.println("\n\n------Creación de Subastas------");
-        System.out.println("Agreguemos tu primer objeto para la subasta:");
-
-        List<Objeto> objetos = new ArrayList<>();
-
-        while (true) {
-            Objeto objeto = crearObjetoUI();
-            objetos.add(objeto);
-
-            if(!confirmar("¿Agregar otro objeto? [S/N]")){
-                break;
-            };
-        }
-
-        if (objetos.isEmpty()){
-            System.out.println("Debe agregar al menos un objeto");
+        if (objeto == null) {
             return;
         }
 
-        System.out.println("\n------Objeto(s) agregado(s) exitosamente------");
-        String titulo = textInput("\nIngrese un título para la subasta:");
-        Subasta subasta = servsubasta.crearSubasta(titulo,usuarioActivo);
-        servsubasta.agregarObjetosSubasta(subasta,objetos);
-        System.out.println("¡Subasta creada exitosamente!\n");
-        System.out.println(subasta);
+        col.agregarObjeto(objeto);
+        System.out.println("Objeto agregado a la colección.");
     }
 
-    //Crear subasta para coleccionista
-    public void crearSubastaColeccionista(){
-        System.out.println("\n\n------Creación de Subastas------");
-        System.out.println("Escoja al menos un objeto de su colección:");
-        Coleccionista col = (Coleccionista) usuarioActivo;
-        List<Objeto> objetosColeccionista = servuser.listarColeccionObjetos(col);
+    public void crearSubastaVendedorUI() {
+        System.out.println("\n------Creación de Subastas------");
+        System.out.println("Agreguemos objetos para la subasta:");
 
-        //verifica si el coleccionista ya tiene una colección con objetos
-        if (objetosColeccionista.isEmpty()){
+        ArrayList<Objeto> objetos = new ArrayList<Objeto>();
+
+        while (true) {
+            Objeto objeto = crearObjetoUI();
+
+            if (objeto == null) {
+                System.out.println("No se pudo crear el objeto.");
+                return;
+            }
+
+            boolean repetido = false;
+            for (Objeto existente : objetos) {
+                if (existente.equals(objeto)) {
+                    repetido = true;
+                    break;
+                }
+            }
+
+            if (repetido) {
+                System.out.println("Ese objeto ya fue agregado.");
+            } else {
+                objetos.add(objeto);
+            }
+
+            if (!input.confirmar("¿Agregar otro objeto? [S/N]")) {
+                break;
+            }
+        }
+
+        if (objetos.isEmpty()) {
+            System.out.println("Debe agregar al menos un objeto.");
+            return;
+        }
+
+        String titulo = input.leerTexto("Ingrese un título para la subasta:");
+
+        try {
+            Subasta subasta = servSubasta.registrarSubasta(titulo, usuarioActivo, objetos);
+            System.out.println("¡Subasta creada exitosamente!");
+            System.out.println(subasta);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void crearSubastaColeccionistaUI() {
+        System.out.println("\n------Creación de Subastas------");
+        System.out.println("Escoja al menos un objeto de su colección:");
+
+        Coleccionista col = (Coleccionista) usuarioActivo;
+        ArrayList<Objeto> objetosColeccionista = col.getObjetosPropios();
+
+        if (objetosColeccionista.isEmpty()) {
             System.out.println("No tiene objetos en su colección.");
             return;
         }
 
-        List<Objeto> objetosSeleccionados = new ArrayList<>();
+        ArrayList<Objeto> objetosSeleccionados = new ArrayList<Objeto>();
 
-        while (true){
-
-            //listar objetos del coleccionista
-            for (int i = 0; i < objetosColeccionista.size();i++){
-                System.out.println((i+1) + ". " + objetosColeccionista.get(i));
+        while (true) {
+            for (int i = 0; i < objetosColeccionista.size(); i++) {
+                System.out.println((i + 1) + ". " + objetosColeccionista.get(i));
             }
 
-            int opcion = leerEnteroMensj("Seleccione un objeto por su índice:");
+            int opcion = input.leerEntero("Seleccione un objeto por su índice:");
 
-            //validar que sea una opción válida
-            if (opcion < 1 || opcion > objetosColeccionista.size()){
+            if (opcion < 1 || opcion > objetosColeccionista.size()) {
                 System.out.println("Selección inválida.");
                 continue;
             }
-            Objeto elegido = objetosColeccionista.get(opcion-1);
 
-            //validar que no haya objetos repetidos
-            if (objetosSeleccionados.contains(elegido)){
+            Objeto elegido = objetosColeccionista.get(opcion - 1);
+
+            boolean repetido = false;
+            for (Objeto obj : objetosSeleccionados) {
+                if (obj.equals(elegido)) {
+                    repetido = true;
+                    break;
+                }
+            }
+
+            if (repetido) {
                 System.out.println("Este objeto ya fue agregado.");
                 continue;
             }
 
             objetosSeleccionados.add(elegido);
 
-            if (objetosSeleccionados.size() == objetosColeccionista.size()){
+            if (objetosSeleccionados.size() == objetosColeccionista.size()) {
                 System.out.println("Ya ha agregado todos los objetos de su colección.");
                 break;
             }
 
-            if (!confirmar("¿Agregar otro objeto? [S/N]")){break;}
+            if (!input.confirmar("¿Agregar otro objeto? [S/N]")) {
+                break;
+            }
         }
 
-        System.out.println("\n------Objeto(s) agregado(s) exitosamente");
-        String titulo = textInput("\nIngrese un título para la subasta:");
-        Subasta subasta = servsubasta.crearSubasta(titulo,col);
-        servsubasta.agregarObjetosSubasta(subasta,objetosSeleccionados);
-        System.out.println("¡Subasta creada exitosamente!\n");
-        System.out.println(subasta);
+        String titulo = input.leerTexto("Ingrese un título para la subasta:");
+
+        try {
+            Subasta subasta = servSubasta.registrarSubasta(titulo, col, objetosSeleccionados);
+            System.out.println("¡Subasta creada exitosamente!");
+            System.out.println(subasta);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    public Objeto crearObjetoUI(){
-        System.out.println("Ingresa los datos para crear tu objeto:");
-        String objNombre = textInput("Nombre del Objeto:");
-        String objDescripcion = textInput("Descripción:");
-        String objEstado = textInput("Condición del objeto:");
-        LocalDate objFecha = dateInput("Fecha original de compra:");
+    public Objeto crearObjetoUI() {
+        System.out.println("\nIngrese los datos para crear su objeto:");
 
-        Objeto objeto = new Objeto(objNombre,objDescripcion,objEstado,objFecha);
-        return objeto;
+        String nombre = input.leerTexto("Nombre del objeto:");
+        String descripcion = input.leerTexto("Descripción:");
+        String estado = input.leerTexto("Condición del objeto:");
+        LocalDate fechaCompra = input.leerFecha("Fecha original de compra (yyyy-MM-dd):");
+
+        if (fechaCompra.isAfter(LocalDate.now())) {
+            System.out.println("La fecha de compra no puede ser futura.");
+            return null;
+        }
+
+        return new Objeto(nombre, descripcion, estado, fechaCompra);
     }
 
-    public void listarOfertasUI(Subasta subasta){
-        System.out.println("------Lista de ofertas para subasta: " +
+    public void listarOfertasUI(Subasta subasta) {
+        System.out.println("\n------Lista de ofertas para subasta: " +
                 subasta.getTitulo() + "------");
 
-        List<Oferta> ofertas = servsubasta.listarOfertas(subasta);
+        ArrayList<Oferta> ofertas = servSubasta.listarOfertas(subasta);
 
-        if (ofertas.isEmpty()){
+        if (ofertas.isEmpty()) {
             System.out.println("No hay ofertas aún.");
+            return;
         }
 
-        for (int i = 0; i < ofertas.size();i++){
-            System.out.println((i+1) + ". Oferente: " +
-                    ofertas.get(i).getOferente().getNombreCompleto() + " | Monto: " +
-                    ofertas.get(i).getMonto() +"\n");
+        for (int i = 0; i < ofertas.size(); i++) {
+            System.out.println((i + 1) + ". Oferente: " +
+                    ofertas.get(i).getOferente().getNombreCompleto() +
+                    " | Monto: " + ofertas.get(i).getMonto() +
+                    " | Fecha: " + ofertas.get(i).getFecha());
         }
     }
 
     /*
     ========================================================================
-    Lectores
-    ========================================================================
-    */
-
-    //String input
-    private String textInput(String p){
-        while(true){
-            System.out.println(p);
-            String s = sc.nextLine().trim();
-            if (!s.isEmpty()) return s;
-            System.out.println("Por favor ingrese un valor.");
-        }
-    }
-
-    private String userInput(String p) {
-        while (true) {
-            System.out.println(p);
-            String s = sc.nextLine();
-            if (!s.isEmpty()){
-                return s;
-            } else
-                System.out.println("Por favor, ingrese un valor.");
-        }
-    }
-
-    private int leerEnteroMensj (String p){
-        while (true) {
-            System.out.print(p);
-
-            try {
-                String input = sc.nextLine();
-                return Integer.parseInt(input.trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Por favor, ingrese un número válido.");
-            }
-        }
-    }
-
-    private int leerEntero(){
-        while (true) {
-            try {
-                String s = sc.nextLine();
-                return Integer.parseInt(s.trim());
-            } catch (NumberFormatException e) {
-                System.out.print("Ingrese un número válido: ");
-            }
-        }
-    }
-
-    private double leerDouble (String p){
-        while (true) {
-            System.out.print(p);
-            try {
-                String input = sc.nextLine();
-                return Double.parseDouble(input.trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Por favor, ingrese un número válido.");
-            }
-        }
-    }
-
-    //lee un string, formatea, y devuelve una fecha
-    private LocalDate dateInput(String p){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate date = null;
-
-        while (date == null){
-            try{
-                String rawDate = userInput(p);
-                date = LocalDate.parse(rawDate, formatter);
-            } catch (DateTimeParseException e){
-                System.out.println("Formato inválido; por favor use dd/MM/yyyy.");
-            }
-        }
-        return date;
-    }
-
-    private boolean confirmar(String p){
-        while (true){
-            String resp = textInput(p);
-            if (resp.equalsIgnoreCase("s")){
-                return true;
-            } else if (resp.equalsIgnoreCase("n")) {
-                return false;
-            }
-            System.out.println("Por favor ingrese 's' ó 'n'.");
-        }
-    }
-
-    /*========================================================================
     Otros métodos
     ========================================================================
     */
 
-    //imprime el array de opciones para desplegar un menú más dinámico
-    private void printOpciones(){
-        for (int i = 0; i < opciones.size();i++){
-            System.out.println((i+1) + ") " + opciones.get(i));
+    private void imprimirOpciones() {
+        for (int i = 0; i < opciones.size(); i++) {
+            System.out.println((i + 1) + ") " + opciones.get(i));
         }
     }
 
     private void opcionInvalida() {
         System.out.println("Opción inválida.");
     }
-
-    }
+}

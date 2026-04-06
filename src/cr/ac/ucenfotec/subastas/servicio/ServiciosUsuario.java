@@ -1,87 +1,125 @@
 package cr.ac.ucenfotec.subastas.servicio;
 
+import cr.ac.ucenfotec.subastas.model.Coleccionista;
+import cr.ac.ucenfotec.subastas.model.Moderador;
+import cr.ac.ucenfotec.subastas.model.Usuario;
+import cr.ac.ucenfotec.subastas.model.Vendedor;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.List;
-import cr.ac.ucenfotec.subastas.model.*;
 
 public class ServiciosUsuario {
 
-    private List<Usuario> users = new ArrayList<>();
-    private Moderador admin;
+    // Atributos
 
-    //Métodos para usuarios
-    public boolean esMayordeEdad(LocalDate DOB) {
-        LocalDate hoy = LocalDate.now();
-        int edad;
-        edad = Period.between(DOB, hoy).getYears();
-        return edad >= 18;
+    private ArrayList<Usuario> usuarios;
+
+    // Constructor
+
+    public ServiciosUsuario() {
+        usuarios = new ArrayList<>();
     }
 
-    public void registrarModerador(String nombre, String email, String pw,
-                                   String id, LocalDate DOB) {
-        admin = new Moderador(nombre, id, DOB, pw, email);
+    // Registrar moderador por defecto
+
+    public void registrarModeradorDefault() {
+        if (!existeIdentificacion("MOD001")) {
+            Moderador moderador = new Moderador(
+                    "Moderador General",
+                    "MOD001",
+                    LocalDate.of(1990, 1, 1),
+                    "admin123",
+                    "moderador@subastas.com"
+            );
+            usuarios.add(moderador);
+        }
     }
 
-    public boolean adminExiste() {return admin != null;}
+    // Registrar usuario
 
-    public Usuario registrarUsuario(String nombre, String email, String pw,
-                                    String id, String dir, LocalDate DOB, int userType) {
-        Usuario user =
-                switch (userType) {
-                    case 1 -> new Vendedor(nombre, id, DOB, pw, email, 0, dir);
-                    case 2 -> new Coleccionista(nombre, id, DOB, pw, email, 0, dir);
-                    default -> throw new IllegalArgumentException("Tipo de usuario inválido");
-                };
-        users.add(user);
-        return user;
+    public Usuario registrarUsuario(String nombre, String email, String pw, String id,
+                                    String direccion, LocalDate fechaNacimiento, String tipoUsuario) {
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("El correo es obligatorio.");
+        }
+
+        if (pw == null || pw.trim().isEmpty()) {
+            throw new IllegalArgumentException("La contraseña es obligatoria.");
+        }
+
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("La identificación es obligatoria.");
+        }
+
+        if (direccion == null || direccion.trim().isEmpty()) {
+            throw new IllegalArgumentException("La dirección es obligatoria.");
+        }
+
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+        }
+
+        if (!esMayorDeEdad(fechaNacimiento)) {
+            throw new IllegalArgumentException("El usuario debe ser mayor de edad.");
+        }
+
+        if (existeIdentificacion(id)) {
+            throw new IllegalArgumentException("Ya existe un usuario con esa identificación.");
+        }
+
+        Usuario usuario;
+
+        if (tipoUsuario.equalsIgnoreCase("Vendedor")) {
+            usuario = new Vendedor(nombre, id, fechaNacimiento, pw, email, direccion);
+        } else if (tipoUsuario.equalsIgnoreCase("Coleccionista")) {
+            usuario = new Coleccionista(nombre, id, fechaNacimiento, pw, email, 0.0, direccion);
+        } else {
+            throw new IllegalArgumentException("Tipo de usuario no válido.");
+        }
+
+        usuarios.add(usuario);
+        return usuario;
     }
 
-    public List<Usuario> listarUsuarios() {
-        return List.copyOf(users);
-    }
+    // Login
 
-    public Usuario lookupUser(String id){
-        for (Usuario u : users){
-            if (u.getIdentificacion().equals(id)){
-                return u;
+    public Usuario iniciarSesion(String correo, String contrasena) {
+        for (Usuario usuario : usuarios) {
+            if (usuario.getCorreoElectronico().equals(correo) &&
+                    usuario.getContrasena().equals(contrasena)) {
+                return usuario;
             }
         }
         return null;
     }
 
-    public boolean idExist(String id){
-        for (Usuario u : users){
-            if(u.getIdentificacion().equals(id)){
+    // Validar mayoría de edad
+
+    public boolean esMayorDeEdad(LocalDate fechaNacimiento) {
+        Period edad = Period.between(fechaNacimiento, LocalDate.now());
+        return edad.getYears() >= 18;
+    }
+
+    // Validar identificación existente
+
+    public boolean existeIdentificacion(String identificacion) {
+        for (Usuario usuario : usuarios) {
+            if (usuario.getIdentificacion().equals(identificacion)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean autenticarUsuario(Usuario u, String pw) {
-        return u.getContrasena().equals(pw);
-    }
+    // Listar usuarios
 
-    //métodos para atributos de usuarios
-    public void addIntereses(Coleccionista coleccionista, String interes) {
-        coleccionista.agregarInteres(interes);
-    }
-
-    public void addObjeto(Coleccionista coleccionista, Objeto objeto) {
-        coleccionista.agregarObjeto(objeto);
-    }
-
-    public List<Objeto> listarColeccionObjetos(Coleccionista coleccionista) {
-        return List.copyOf(coleccionista.getObjetosPropios());
-    }
-
-    public void addObjetoColeccion(Coleccionista coleccionista, Objeto objeto) {
-        coleccionista.agregarObjeto(objeto);
-    }
-
-    public List<String> listarIntereses(Coleccionista col) {
-        return List.copyOf(col.getListaIntereses());
+    public ArrayList<Usuario> listarUsuarios() {
+        return usuarios;
     }
 }

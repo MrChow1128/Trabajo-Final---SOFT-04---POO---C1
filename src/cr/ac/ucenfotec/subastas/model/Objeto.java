@@ -3,7 +3,6 @@ package cr.ac.ucenfotec.subastas.model;
 import java.time.LocalDate;
 import java.time.Period;
 
-    //Objeto es el Articulo a subastar y/o comprar
 public class Objeto {
 
     // Atributos
@@ -18,8 +17,7 @@ public class Objeto {
     public Objeto() {
     }
 
-    public Objeto(String nombre, String descripcion,
-                  String estado, LocalDate fechaCompra) {
+    public Objeto(String nombre, String descripcion, String estado, LocalDate fechaCompra) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.estado = estado;
@@ -29,7 +27,6 @@ public class Objeto {
     // Método para calcular antigüedad
 
     public String calcularAntiguedad() {
-
         if (fechaCompra == null) {
             return "Fecha no definida";
         }
@@ -75,15 +72,23 @@ public class Objeto {
         this.fechaCompra = fechaCompra;
     }
 
-    // equals (estilo visto en clase)
+    // equals (sin override, estilo visto en clase)
 
     public boolean equals(Objeto otroObjeto) {
-        if (this.nombre.equals(otroObjeto.getNombre()) &&
-                this.fechaCompra.equals(otroObjeto.getFechaCompra())) {
-            return true;
-        } else {
+        if (otroObjeto == null) {
             return false;
         }
+
+        if (this.nombre == null || otroObjeto.getNombre() == null) {
+            return false;
+        }
+
+        if (this.fechaCompra == null || otroObjeto.getFechaCompra() == null) {
+            return false;
+        }
+
+        return this.nombre.equals(otroObjeto.getNombre()) &&
+                this.fechaCompra.equals(otroObjeto.getFechaCompra());
     }
 
     // toString

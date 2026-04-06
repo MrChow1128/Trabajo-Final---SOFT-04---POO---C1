@@ -1,21 +1,27 @@
 package cr.ac.ucenfotec.subastas.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Orden {
+
+    // Atributos
 
     private Coleccionista comprador;
     private ArrayList<Objeto> objetos;
     private double precioTotal;
-    private Date fecha;
+    private LocalDateTime fecha;
+
+    // Constructor
 
     public Orden(Coleccionista comprador, ArrayList<Objeto> objetos, double precioTotal) {
         this.comprador = comprador;
         this.objetos = objetos;
         this.precioTotal = precioTotal;
-        this.fecha = new Date();
+        this.fecha = LocalDateTime.now();
     }
+
+    // Getters
 
     public Coleccionista getComprador() {
         return comprador;
@@ -29,9 +35,11 @@ public class Orden {
         return precioTotal;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
+
+    // toString
 
     public String toString() {
         return "Orden{" +
