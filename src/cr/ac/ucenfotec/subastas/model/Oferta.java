@@ -40,7 +40,7 @@ public class Oferta {
         return fecha;
     }
 
-    // equals (sin override, estilo visto en clase)
+    // equals
 
     public boolean equals(Oferta otra) {
         if (otra == null) {
