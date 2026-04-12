@@ -20,7 +20,6 @@ public class ServiciosSubastas {
         subastas = new ArrayList<>();
     }
 
-<<<<<<< HEAD
     // Registrar subasta
 
     public Subasta registrarSubasta(String titulo, Usuario creador, ArrayList<Objeto> objetos) {
@@ -57,23 +56,6 @@ public class ServiciosSubastas {
         if (subasta == null) {
             throw new IllegalArgumentException("Debe seleccionar una subasta válida.");
         }
-=======
-    //métodos para subastas
-    public Subasta registrarSubasta(String titulo, Usuario creador, List<Objeto> objetos){
-        if (objetos == null || objetos.isEmpty()){
-            throw new IllegalArgumentException("La subasta debe tener al menos un objeto.");
-        }
-
-        Subasta subasta = new Subasta(titulo,creador);
-
-        for (Objeto objeto : objetos){
-            subasta.agregarObjeto(objeto);
-        }
-
-        subastas.add(subasta);
-        return subasta;
-    }
->>>>>>> ddd2f518b5784fe4eec853b63805707c3e118d1a
 
         if (coleccionista == null) {
             throw new IllegalArgumentException("El oferente no es válido.");

@@ -89,24 +89,16 @@ public class ServiciosUsuario {
 
     // Login
 
-<<<<<<< HEAD
     public Usuario iniciarSesion(String correo, String contrasena) {
         for (Usuario usuario : usuarios) {
             if (usuario.getCorreoElectronico().equals(correo) &&
                     usuario.getContrasena().equals(contrasena)) {
                 return usuario;
-=======
-    public Usuario buscarUsuario(String id){
-        for (Usuario u : users){
-            if (u.getIdentificacion().equals(id)){
-                return u;
->>>>>>> ddd2f518b5784fe4eec853b63805707c3e118d1a
             }
         }
         return null;
     }
 
-<<<<<<< HEAD
     // Validar mayoría de edad
 
     public boolean esMayorDeEdad(LocalDate fechaNacimiento) {
@@ -119,11 +111,6 @@ public class ServiciosUsuario {
     public boolean existeIdentificacion(String identificacion) {
         for (Usuario usuario : usuarios) {
             if (usuario.getIdentificacion().equals(identificacion)) {
-=======
-    public boolean existeIdentificacion(String id){
-        for (Usuario u : users){
-            if(u.getIdentificacion().equals(id)){
->>>>>>> ddd2f518b5784fe4eec853b63805707c3e118d1a
                 return true;
             }
         }
@@ -132,27 +119,7 @@ public class ServiciosUsuario {
 
     // Listar usuarios
 
-<<<<<<< HEAD
     public ArrayList<Usuario> listarUsuarios() {
         return usuarios;
     }
 }
-=======
-    //métodos para atributos de usuarios
-    public void agregarInteres(Coleccionista coleccionista, String interes) {
-        coleccionista.agregarInteres(interes);
-    }
-
-    public List<Objeto> listarColeccionObjetos(Coleccionista coleccionista) {
-        return List.copyOf(coleccionista.getObjetosPropios());
-    }
-
-    public void agregarObjetoAColeccion(Coleccionista coleccionista, Objeto objeto) {
-        coleccionista.agregarObjeto(objeto);
-    }
-
-    public List<String> listarIntereses(Coleccionista col) {
-        return List.copyOf(col.getListaIntereses());
-    }
-}
->>>>>>> ddd2f518b5784fe4eec853b63805707c3e118d1a
