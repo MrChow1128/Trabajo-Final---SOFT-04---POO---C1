@@ -542,7 +542,6 @@ public class Menu {
 
     public Objeto crearObjetoUI() {
         System.out.println("\nIngrese los datos para crear su objeto:");
-=======
 
         if (ofertas.isEmpty()) {
             System.out.println("No hay ofertas aún.");
@@ -563,7 +562,6 @@ public class Menu {
     ========================================================================
     */
 
-<<<<<<< HEAD
     private void imprimirOpciones() {
         for (int i = 0; i < opciones.size(); i++) {
             System.out.println((i + 1) + ") " + opciones.get(i));
@@ -571,4 +569,5 @@ public class Menu {
     private void imprimirOpciones(){
         for (int i = 0; i < opciones.size();i++){
     }
+}
 }
