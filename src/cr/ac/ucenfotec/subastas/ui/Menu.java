@@ -72,12 +72,6 @@ public class Menu {
         }
     }
 
-    /*
-    ========================================================================
-    Métodos de Menús
-    ========================================================================
-    */
-
     private void menuUsuarios() {
         while (true) {
             mostrarOpciones();
@@ -196,7 +190,7 @@ public class Menu {
         opciones.add("Ver ofertas");
 
         if (usuarioActivo instanceof Coleccionista) {
-            if (!subasta.getCreador().equals((Coleccionista) usuarioActivo)) {
+            if (!subasta.getCreador().equals((Usuario) usuarioActivo)) {
                 opciones.add("Hacer una oferta");
             }
         }
@@ -237,12 +231,6 @@ public class Menu {
                 break;
         }
     }
-
-    /*
-    ========================================================================
-    Métodos de servicios de Usuario
-    ========================================================================
-    */
 
     public void registrarUsuarioUI() {
         System.out.println("\n------Registro de usuario------");
@@ -354,12 +342,6 @@ public class Menu {
         col.agregarInteres(interes);
         System.out.println("Interés agregado correctamente.");
     }
-
-    /*
-    ========================================================================
-    Métodos de servicios de Subastas y objetos
-    ========================================================================
-    */
 
     public void crearSubastaUI() {
         if (usuarioActivo instanceof Vendedor) {
@@ -528,6 +510,12 @@ public class Menu {
             if (!input.confirmar("¿Agregar otro objeto? [S/N]")) {
                 break;
             }
+        }
+
+        if (objetosSeleccionados.isEmpty()) {
+            System.out.println("Debe seleccionar al menos un objeto.");
+            return;
+        }
 
         String titulo = input.leerTexto("Ingrese un título para la subasta:");
 
@@ -543,6 +531,24 @@ public class Menu {
     public Objeto crearObjetoUI() {
         System.out.println("\nIngrese los datos para crear su objeto:");
 
+        String nombre = input.leerTexto("Nombre del objeto:");
+        String descripcion = input.leerTexto("Descripción del objeto:");
+        String estado = input.leerTexto("Estado del objeto:");
+        LocalDate fechaCompra = input.leerFecha("Fecha de compra (yyyy-MM-dd):");
+
+        try {
+            return new Objeto(nombre, descripcion, estado, fechaCompra);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public void listarOfertasUI(Subasta subasta) {
+        System.out.println("\n------Lista de Ofertas------");
+
+        ArrayList<Oferta> ofertas = subasta.getOfertas();
+
         if (ofertas.isEmpty()) {
             System.out.println("No hay ofertas aún.");
             return;
@@ -556,18 +562,13 @@ public class Menu {
         }
     }
 
-    /*
-    ========================================================================
-    Otros métodos
-    ========================================================================
-    */
-
     private void imprimirOpciones() {
         for (int i = 0; i < opciones.size(); i++) {
             System.out.println((i + 1) + ") " + opciones.get(i));
-    //imprime el array de opciones para desplegar un menú más dinámico
-    private void imprimirOpciones(){
-        for (int i = 0; i < opciones.size();i++){
+        }
     }
-}
+
+    private void opcionInvalida() {
+        System.out.println("Opción inválida. Intente nuevamente.");
+    }
 }

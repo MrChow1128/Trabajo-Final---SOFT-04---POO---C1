@@ -9,6 +9,7 @@ public class ConsoleInput {
 
     public ConsoleInput() {
         scanner = new Scanner(System.in);
+    }
 
     public String leerTexto(String mensaje) {
         System.out.print(mensaje + " ");
@@ -23,6 +24,18 @@ public class ConsoleInput {
                 return valor;
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Debe ingresar un número entero.");
+            }
+        }
+    }
+
+    public double leerDouble(String mensaje) {
+        while (true) {
+            try {
+                System.out.print(mensaje + " ");
+                double valor = Double.parseDouble(scanner.nextLine());
+                return valor;
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Debe ingresar un número decimal válido.");
             }
         }
     }
@@ -53,5 +66,4 @@ public class ConsoleInput {
             }
         }
     }
-}
 }
