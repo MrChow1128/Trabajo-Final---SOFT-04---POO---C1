@@ -1,13 +1,13 @@
 package cr.ac.ucenfotec.subastas.ui;
 
-import cr.ac.ucenfotec.subastas.servicio.ServiciosSubastas;
-import cr.ac.ucenfotec.subastas.servicio.ServiciosUsuario;
+import cr.ac.ucenfotec.subastas.bl.logic.GestorSubasta;
+import cr.ac.ucenfotec.subastas.bl.logic.GestorUsuario;
 
 public class Main {
 
     public static void main(String[] args) {
-        ServiciosUsuario servUsuario = new ServiciosUsuario();
-        ServiciosSubastas servSubasta = new ServiciosSubastas();
+        GestorUsuario servUsuario = new GestorUsuario();
+        GestorSubasta servSubasta = new GestorSubasta();
 
         Menu menu = new Menu(servUsuario, servSubasta);
         menu.ejecutar();

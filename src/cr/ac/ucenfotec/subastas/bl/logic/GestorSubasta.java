@@ -1,14 +1,14 @@
-package cr.ac.ucenfotec.subastas.servicio;
+package cr.ac.ucenfotec.subastas.bl.logic;
 
-import cr.ac.ucenfotec.subastas.model.Coleccionista;
-import cr.ac.ucenfotec.subastas.model.Objeto;
-import cr.ac.ucenfotec.subastas.model.Oferta;
-import cr.ac.ucenfotec.subastas.model.Subasta;
-import cr.ac.ucenfotec.subastas.model.Usuario;
+import cr.ac.ucenfotec.subastas.bl.model.Coleccionista;
+import cr.ac.ucenfotec.subastas.bl.model.Objeto;
+import cr.ac.ucenfotec.subastas.bl.model.Oferta;
+import cr.ac.ucenfotec.subastas.bl.model.Subasta;
+import cr.ac.ucenfotec.subastas.bl.model.Usuario;
 
 import java.util.ArrayList;
 
-public class ServiciosSubastas {
+public class GestorSubasta {
 
     // Atributos
 
@@ -16,7 +16,7 @@ public class ServiciosSubastas {
 
     // Constructor
 
-    public ServiciosSubastas() {
+    public GestorSubasta() {
         subastas = new ArrayList<>();
     }
 

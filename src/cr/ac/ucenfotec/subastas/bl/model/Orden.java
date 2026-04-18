@@ -1,4 +1,4 @@
-package cr.ac.ucenfotec.subastas.model;
+package cr.ac.ucenfotec.subastas.bl.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

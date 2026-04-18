@@ -1,15 +1,15 @@
-package cr.ac.ucenfotec.subastas.servicio;
+package cr.ac.ucenfotec.subastas.bl.logic;
 
-import cr.ac.ucenfotec.subastas.model.Coleccionista;
-import cr.ac.ucenfotec.subastas.model.Moderador;
-import cr.ac.ucenfotec.subastas.model.Usuario;
-import cr.ac.ucenfotec.subastas.model.Vendedor;
+import cr.ac.ucenfotec.subastas.bl.model.Coleccionista;
+import cr.ac.ucenfotec.subastas.bl.model.Moderador;
+import cr.ac.ucenfotec.subastas.bl.model.Usuario;
+import cr.ac.ucenfotec.subastas.bl.model.Vendedor;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 
-public class ServiciosUsuario {
+public class GestorUsuario {
 
     // Atributos
 
@@ -17,7 +17,7 @@ public class ServiciosUsuario {
 
     // Constructor
 
-    public ServiciosUsuario() {
+    public GestorUsuario() {
         usuarios = new ArrayList<>();
     }
 

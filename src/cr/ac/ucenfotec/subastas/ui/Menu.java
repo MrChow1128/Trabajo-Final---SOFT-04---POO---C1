@@ -1,26 +1,26 @@
 package cr.ac.ucenfotec.subastas.ui;
 
-import cr.ac.ucenfotec.subastas.model.Coleccionista;
-import cr.ac.ucenfotec.subastas.model.Objeto;
-import cr.ac.ucenfotec.subastas.model.Oferta;
-import cr.ac.ucenfotec.subastas.model.Subasta;
-import cr.ac.ucenfotec.subastas.model.Usuario;
-import cr.ac.ucenfotec.subastas.model.Vendedor;
-import cr.ac.ucenfotec.subastas.servicio.ServiciosSubastas;
-import cr.ac.ucenfotec.subastas.servicio.ServiciosUsuario;
+import cr.ac.ucenfotec.subastas.bl.model.Coleccionista;
+import cr.ac.ucenfotec.subastas.bl.model.Objeto;
+import cr.ac.ucenfotec.subastas.bl.model.Oferta;
+import cr.ac.ucenfotec.subastas.bl.model.Subasta;
+import cr.ac.ucenfotec.subastas.bl.model.Usuario;
+import cr.ac.ucenfotec.subastas.bl.model.Vendedor;
+import cr.ac.ucenfotec.subastas.bl.logic.GestorSubasta;
+import cr.ac.ucenfotec.subastas.bl.logic.GestorUsuario;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Menu {
 
-    private ServiciosSubastas servSubasta;
-    private ServiciosUsuario servUsuario;
+    private GestorSubasta servSubasta;
+    private GestorUsuario servUsuario;
     private Usuario usuarioActivo;
     private ConsoleInput input;
     private ArrayList<String> opciones;
 
-    public Menu(ServiciosUsuario servUsuario, ServiciosSubastas servSubasta) {
+    public Menu(GestorUsuario servUsuario, GestorSubasta servSubasta) {
         this.servUsuario = servUsuario;
         this.servSubasta = servSubasta;
         this.usuarioActivo = null;
