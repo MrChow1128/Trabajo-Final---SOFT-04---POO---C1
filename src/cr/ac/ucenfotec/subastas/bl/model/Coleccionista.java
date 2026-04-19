@@ -3,56 +3,38 @@ package cr.ac.ucenfotec.subastas.bl.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * Usuario coleccionista.
+ */
 public class Coleccionista extends Usuario {
-
-    // Atributos propios
 
     private double puntuacion;
     private String direccion;
     private ArrayList<String> listaIntereses;
     private ArrayList<Objeto> objetosPropios;
-
-    // Constructores
+    private ArrayList<Oferta> ofertasRealizadas;
 
     public Coleccionista() {
         super();
-        this.listaIntereses = new ArrayList<>();
-        this.objetosPropios = new ArrayList<>();
+        this.listaIntereses = new ArrayList<String>();
+        this.objetosPropios = new ArrayList<Objeto>();
+        this.ofertasRealizadas = new ArrayList<Oferta>();
     }
 
     public Coleccionista(String nombreCompleto, String identificacion,
                          LocalDate fechaNacimiento, String contrasena,
-                         String correoElectronico,
-                         double puntuacion, String direccion) {
-
+                         String correoElectronico, double puntuacion, String direccion) {
         super(nombreCompleto, identificacion, fechaNacimiento, contrasena, correoElectronico);
         this.puntuacion = puntuacion;
         this.direccion = direccion;
-        this.listaIntereses = new ArrayList<>();
-        this.objetosPropios = new ArrayList<>();
+        this.listaIntereses = new ArrayList<String>();
+        this.objetosPropios = new ArrayList<Objeto>();
+        this.ofertasRealizadas = new ArrayList<Oferta>();
     }
-
-    // Método polimórfico
 
     public String getTipoUsuario() {
         return "Coleccionista";
     }
-
-    // Métodos propios
-
-    public void agregarInteres(String interes) {
-        if (interes != null && !interes.trim().isEmpty()) {
-            listaIntereses.add(interes);
-        }
-    }
-
-    public void agregarObjeto(Objeto objeto) {
-        if (objeto != null) {
-            objetosPropios.add(objeto);
-        }
-    }
-
-    // Getters y Setters
 
     public double getPuntuacion() {
         return puntuacion;
@@ -86,14 +68,38 @@ public class Coleccionista extends Usuario {
         this.objetosPropios = objetosPropios;
     }
 
-    // toString
+    public ArrayList<Oferta> getOfertasRealizadas() {
+        return ofertasRealizadas;
+    }
+
+    public void setOfertasRealizadas(ArrayList<Oferta> ofertasRealizadas) {
+        this.ofertasRealizadas = ofertasRealizadas;
+    }
+
+    public void agregarInteres(String interes) {
+        if (interes != null && !interes.trim().isEmpty()) {
+            listaIntereses.add(interes.trim());
+        }
+    }
+
+    public void agregarObjeto(Objeto objeto) {
+        if (objeto != null) {
+            objetosPropios.add(objeto);
+        }
+    }
+
+    public void agregarOferta(Oferta oferta) {
+        if (oferta != null) {
+            ofertasRealizadas.add(oferta);
+        }
+    }
 
     public String toString() {
-        return "Coleccionista {" + super.toString() +
-                ", Puntuacion=" + puntuacion +
-                ", Direccion='" + direccion + '\'' +
-                ", Intereses=" + listaIntereses +
-                ", CantidadObjetos=" + objetosPropios.size() +
-                "}";
+        return "Coleccionista\n" + super.toString() +
+                "\nPuntuación: " + puntuacion +
+                "\nDirección: " + direccion +
+                "\nCantidad de intereses: " + listaIntereses.size() +
+                "\nCantidad de objetos propios: " + objetosPropios.size() +
+                "\nCantidad de ofertas realizadas: " + ofertasRealizadas.size();
     }
 }

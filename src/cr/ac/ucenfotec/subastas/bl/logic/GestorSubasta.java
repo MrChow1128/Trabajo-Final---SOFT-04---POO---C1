@@ -1,40 +1,27 @@
 package cr.ac.ucenfotec.subastas.bl.logic;
 
+import cr.ac.ucenfotec.subastas.bl.dao.DAOOferta;
+import cr.ac.ucenfotec.subastas.bl.dao.DAOSubasta;
 import cr.ac.ucenfotec.subastas.bl.model.Coleccionista;
 import cr.ac.ucenfotec.subastas.bl.model.Objeto;
 import cr.ac.ucenfotec.subastas.bl.model.Oferta;
 import cr.ac.ucenfotec.subastas.bl.model.Subasta;
 import cr.ac.ucenfotec.subastas.bl.model.Usuario;
+import cr.ac.ucenfotec.subastas.bl.model.Vendedor;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
+/**
+ * Gestiona la lógica relacionada con subastas y ofertas.
+ */
 public class GestorSubasta {
 
-    // Atributos
-
-    private ArrayList<Subasta> subastas;
-
-    // Constructor
-
     public GestorSubasta() {
-        subastas = new ArrayList<>();
     }
 
-    // Registrar subasta
-
     public Subasta registrarSubasta(String titulo, Usuario creador, ArrayList<Objeto> objetos) {
-
-        if (titulo == null || titulo.trim().isEmpty()) {
-            throw new IllegalArgumentException("La subasta debe tener un título válido.");
-        }
-
-        if (creador == null) {
-            throw new IllegalArgumentException("La subasta debe tener un creador válido.");
-        }
-
-        if (objetos == null || objetos.isEmpty()) {
-            throw new IllegalArgumentException("La subasta debe tener al menos un objeto.");
-        }
+        validarDatosSubasta(titulo, creador, objetos);
 
         Subasta subasta = new Subasta(titulo, creador);
 
@@ -45,14 +32,20 @@ public class GestorSubasta {
             subasta.agregarObjeto(objeto);
         }
 
-        subastas.add(subasta);
-        return subasta;
+        if (creador instanceof Vendedor) {
+            Vendedor vendedor = (Vendedor) creador;
+            vendedor.agregarSubasta(subasta);
+        }
+
+        try {
+            DAOSubasta.insertarSubasta(subasta);
+            return subasta;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al registrar la subasta en la base de datos.");
+        }
     }
 
-    // Hacer oferta
-
     public Oferta hacerOferta(Subasta subasta, Coleccionista coleccionista, double monto) {
-
         if (subasta == null) {
             throw new IllegalArgumentException("Debe seleccionar una subasta válida.");
         }
@@ -69,32 +62,93 @@ public class GestorSubasta {
             throw new IllegalArgumentException("El monto debe ser mayor que cero.");
         }
 
-        if (subasta.getCreador().equals(coleccionista)) {
+        if (subasta.getCreador() != null && subasta.getCreador().equals(coleccionista)) {
             throw new IllegalArgumentException("No puede ofertar en su propia subasta.");
         }
 
         Oferta mejorOferta = subasta.obtenerMejorOferta();
         if (mejorOferta != null && monto <= mejorOferta.getMonto()) {
-            throw new IllegalArgumentException("La oferta debe ser mayor a la oferta actual.");
+            throw new IllegalArgumentException("La oferta debe ser mayor que la oferta actual.");
         }
 
         Oferta oferta = new Oferta(coleccionista, monto);
         subasta.agregarOferta(oferta);
-        return oferta;
-    }
+        coleccionista.agregarOferta(oferta);
 
-    // Listar subastas
+        try {
+            DAOOferta.insertarOferta(subasta.getId(), oferta);
+            return oferta;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al registrar la oferta en la base de datos.");
+        }
+    }
 
     public ArrayList<Subasta> listarSubastas() {
-        return subastas;
+        try {
+            return DAOSubasta.listarSubastas();
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al listar las subastas.");
+        }
     }
-
-    // Listar ofertas de una subasta
 
     public ArrayList<Oferta> listarOfertas(Subasta subasta) {
         if (subasta == null) {
-            return new ArrayList<>();
+            return new ArrayList<Oferta>();
         }
-        return subasta.getOfertas();
+
+        try {
+            return DAOOferta.listarOfertasPorSubasta(subasta.getId());
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al listar las ofertas de la subasta.");
+        }
+    }
+
+    public Subasta buscarSubastaPorId(int idSubasta) {
+        try {
+            return DAOSubasta.seleccionarSubastaPorId(idSubasta);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al buscar la subasta.");
+        }
+    }
+
+    public void cerrarSubasta(Subasta subasta) {
+        if (subasta == null) {
+            throw new IllegalArgumentException("La subasta indicada no es válida.");
+        }
+
+        if (!subasta.isActiva()) {
+            throw new IllegalArgumentException("La subasta ya se encuentra cerrada.");
+        }
+
+        try {
+            DAOSubasta.cerrarSubasta(subasta.getId());
+            subasta.cerrarSubasta();
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error al cerrar la subasta.");
+        }
+    }
+
+    private void validarDatosSubasta(String titulo, Usuario creador, ArrayList<Objeto> objetos) {
+        if (titulo == null || titulo.trim().isEmpty()) {
+            throw new IllegalArgumentException("La subasta debe tener un título válido.");
+        }
+
+        if (creador == null) {
+            throw new IllegalArgumentException("La subasta debe tener un creador válido.");
+        }
+
+        if (objetos == null || objetos.isEmpty()) {
+            throw new IllegalArgumentException("La subasta debe tener al menos un objeto.");
+        }
+
+        for (Objeto objeto : objetos) {
+            if (objeto == null) {
+                throw new IllegalArgumentException("No se permiten objetos nulos en la subasta.");
+            }
+
+            if (objeto.getNombre() == null || objeto.getNombre().trim().isEmpty()) {
+                throw new IllegalArgumentException("Todos los objetos deben tener nombre.");
+            }
+        }
     }
 }

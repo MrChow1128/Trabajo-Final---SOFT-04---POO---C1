@@ -2,9 +2,10 @@ package cr.ac.ucenfotec.subastas.bl.model;
 
 import java.time.LocalDate;
 
+/**
+ * Clase base abstracta para todos los usuarios del sistema.
+ */
 public abstract class Usuario implements PerfilUsuario {
-
-    // Atributos
 
     private String nombreCompleto;
     private String identificacion;
@@ -12,26 +13,17 @@ public abstract class Usuario implements PerfilUsuario {
     private String contrasena;
     private String correoElectronico;
 
-    // Constructores
-
     public Usuario() {
     }
 
-    public Usuario(String nombreCompleto, String identificacion,
-                   LocalDate fechaNacimiento, String contrasena,
-                   String correoElectronico) {
+    public Usuario(String nombreCompleto, String identificacion, LocalDate fechaNacimiento,
+                   String contrasena, String correoElectronico) {
         this.nombreCompleto = nombreCompleto;
         this.identificacion = identificacion;
         this.fechaNacimiento = fechaNacimiento;
         this.contrasena = contrasena;
         this.correoElectronico = correoElectronico;
     }
-
-    // Método abstracto para polimorfismo
-
-    public abstract String getTipoUsuario();
-
-    // Getters y Setters
 
     public String getNombreCompleto() {
         return nombreCompleto;
@@ -73,27 +65,23 @@ public abstract class Usuario implements PerfilUsuario {
         this.correoElectronico = correoElectronico;
     }
 
-    // equals (estilo visto en clase, sin override)
-
     public boolean equals(Usuario otroUsuario) {
         if (otroUsuario == null) {
             return false;
         }
 
-        if (this.identificacion == null || otroUsuario.getIdentificacion() == null) {
+        if (identificacion == null || otroUsuario.getIdentificacion() == null) {
             return false;
         }
 
-        return this.identificacion.equals(otroUsuario.getIdentificacion());
+        return identificacion.equals(otroUsuario.getIdentificacion());
     }
 
-    // toString
-
     public String toString() {
-        return "NombreCompleto='" + nombreCompleto + '\'' +
-                ", Identificacion='" + identificacion + '\'' +
-                ", FechaNacimiento=" + fechaNacimiento +
-                ", CorreoElectronico='" + correoElectronico + '\'' +
-                ", TipoUsuario='" + getTipoUsuario() + '\'';
+        return "Nombre completo: " + nombreCompleto +
+                "\nIdentificación: " + identificacion +
+                "\nFecha de nacimiento: " + fechaNacimiento +
+                "\nCorreo electrónico: " + correoElectronico +
+                "\nTipo de usuario: " + getTipoUsuario();
     }
 }

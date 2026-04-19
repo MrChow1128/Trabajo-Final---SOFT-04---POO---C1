@@ -3,16 +3,16 @@ package cr.ac.ucenfotec.subastas.bl.model;
 import java.time.LocalDate;
 import java.time.Period;
 
+/**
+ * Representa un objeto que puede pertenecer a una colección
+ * o ser parte de una subasta.
+ */
 public class Objeto {
-
-    // Atributos
 
     private String nombre;
     private String descripcion;
     private String estado;
     private LocalDate fechaCompra;
-
-    // Constructores
 
     public Objeto() {
     }
@@ -24,8 +24,6 @@ public class Objeto {
         this.fechaCompra = fechaCompra;
     }
 
-    // Método para calcular antigüedad
-
     public String calcularAntiguedad() {
         if (fechaCompra == null) {
             return "Fecha no definida";
@@ -33,12 +31,10 @@ public class Objeto {
 
         Period periodo = Period.between(fechaCompra, LocalDate.now());
 
-        return periodo.getYears() + " años, "
-                + periodo.getMonths() + " meses, "
-                + periodo.getDays() + " días";
+        return periodo.getYears() + " años, " +
+                periodo.getMonths() + " meses, " +
+                periodo.getDays() + " días";
     }
-
-    // Getters y Setters
 
     public String getNombre() {
         return nombre;
@@ -72,33 +68,29 @@ public class Objeto {
         this.fechaCompra = fechaCompra;
     }
 
-    // equals (sin override, estilo visto en clase)
-
     public boolean equals(Objeto otroObjeto) {
         if (otroObjeto == null) {
             return false;
         }
 
-        if (this.nombre == null || otroObjeto.getNombre() == null) {
+        if (nombre == null || otroObjeto.getNombre() == null) {
             return false;
         }
 
-        if (this.fechaCompra == null || otroObjeto.getFechaCompra() == null) {
+        if (fechaCompra == null || otroObjeto.getFechaCompra() == null) {
             return false;
         }
 
-        return this.nombre.equals(otroObjeto.getNombre()) &&
-                this.fechaCompra.equals(otroObjeto.getFechaCompra());
+        return nombre.equals(otroObjeto.getNombre()) &&
+                fechaCompra.equals(otroObjeto.getFechaCompra());
     }
 
-    // toString
-
     public String toString() {
-        return "Objeto:" +
+        return "Objeto" +
                 "\n\tNombre: " + nombre +
                 "\n\tDescripción: " + descripcion +
                 "\n\tEstado: " + estado +
-                "\n\tFechaCompra: " + fechaCompra +
+                "\n\tFecha de compra: " + fechaCompra +
                 "\n\tAntigüedad: " + calcularAntiguedad();
     }
 }

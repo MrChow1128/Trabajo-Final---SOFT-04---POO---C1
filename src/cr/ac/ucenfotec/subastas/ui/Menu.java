@@ -6,30 +6,27 @@ import cr.ac.ucenfotec.subastas.bl.model.Oferta;
 import cr.ac.ucenfotec.subastas.bl.model.Subasta;
 import cr.ac.ucenfotec.subastas.bl.model.Usuario;
 import cr.ac.ucenfotec.subastas.bl.model.Vendedor;
-import cr.ac.ucenfotec.subastas.bl.logic.GestorSubasta;
-import cr.ac.ucenfotec.subastas.bl.logic.GestorUsuario;
+import cr.ac.ucenfotec.subastas.tl.Controlador;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Menu {
 
-    private GestorSubasta servSubasta;
-    private GestorUsuario servUsuario;
+    private Controlador controlador;
     private Usuario usuarioActivo;
     private ConsoleInput input;
     private ArrayList<String> opciones;
 
-    public Menu(GestorUsuario servUsuario, GestorSubasta servSubasta) {
-        this.servUsuario = servUsuario;
-        this.servSubasta = servSubasta;
-        this.usuarioActivo = null;
-        this.input = new ConsoleInput();
-        this.opciones = new ArrayList<String>();
+    public Menu() {
+        controlador = new Controlador();
+        usuarioActivo = null;
+        input = new ConsoleInput();
+        opciones = new ArrayList<String>();
     }
 
     public void ejecutar() {
-        servUsuario.registrarModeradorDefault();
+        controlador.registrarModeradorDefault();
 
         boolean salir = false;
 
@@ -102,6 +99,9 @@ public class Menu {
                 case "Mis objetos":
                     menuObjetos();
                     break;
+                case "Cerrar una subasta":
+                    cerrarSubastaUI();
+                    break;
                 case "Salir":
                     System.out.println("\n¡Regresa pronto, " + usuarioActivo.getNombreCompleto() + "!");
                     System.out.println("Regresando al menú principal.");
@@ -127,6 +127,10 @@ public class Menu {
         if (usuarioActivo instanceof Coleccionista) {
             opciones.add("Mis intereses");
             opciones.add("Mis objetos");
+        }
+
+        if (usuarioActivo instanceof Vendedor) {
+            opciones.add("Cerrar una subasta");
         }
 
         opciones.add("Salir");
@@ -190,7 +194,7 @@ public class Menu {
         opciones.add("Ver ofertas");
 
         if (usuarioActivo instanceof Coleccionista) {
-            if (!subasta.getCreador().equals((Usuario) usuarioActivo)) {
+            if (subasta.getCreador() != null && !subasta.getCreador().equals(usuarioActivo) && subasta.isActiva()) {
                 opciones.add("Hacer una oferta");
             }
         }
@@ -216,10 +220,10 @@ public class Menu {
                 Coleccionista coleccionista = (Coleccionista) usuarioActivo;
 
                 try {
-                    Oferta oferta = servSubasta.hacerOferta(subasta, coleccionista, monto);
+                    Oferta oferta = controlador.hacerOferta(subasta, coleccionista, monto);
                     System.out.println("¡Oferta hecha exitosamente!");
                     System.out.println(oferta);
-                } catch (IllegalArgumentException e) {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
                 break;
@@ -265,7 +269,7 @@ public class Menu {
         String direccion = input.leerTexto("Dirección:");
 
         try {
-            Usuario user = servUsuario.registrarUsuario(
+            Usuario user = controlador.registrarUsuario(
                     nombre,
                     correo,
                     contrasena,
@@ -276,14 +280,21 @@ public class Menu {
             );
             System.out.println("Registrado exitosamente:");
             System.out.println(user);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
     private void listarUsuariosUI() {
         System.out.println("\n------Lista de usuarios------");
-        ArrayList<Usuario> usuarios = servUsuario.listarUsuarios();
+        ArrayList<Usuario> usuarios;
+
+        try {
+            usuarios = controlador.listarUsuarios();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
 
         if (usuarios.isEmpty()) {
             System.out.println("No hay usuarios registrados aún.");
@@ -300,31 +311,27 @@ public class Menu {
     private void loginUsuarioUI() {
         System.out.println("\n------Iniciar sesión------");
 
-        ArrayList<Usuario> usuarios = servUsuario.listarUsuarios();
-        if (usuarios.isEmpty()) {
-            System.out.println("No hay usuarios registrados aún.");
-            return;
-        }
-
         String identificacion = input.leerTexto("Identificación:");
         String contrasena = input.leerTexto("Contraseña:");
 
-        for (Usuario usuario : usuarios) {
-            if (usuario.getIdentificacion().equals(identificacion) &&
-                    usuario.getContrasena().equals(contrasena)) {
-                usuarioActivo = usuario;
-                System.out.println("Inicio de sesión exitoso. ¡Bienvenido " +
-                        usuario.getNombreCompleto() + "!");
+        try {
+            usuarioActivo = controlador.iniciarSesion(identificacion, contrasena);
+
+            if (usuarioActivo == null) {
+                System.out.println("Credenciales inválidas.");
                 return;
             }
-        }
 
-        System.out.println("Credenciales inválidas.");
+            System.out.println("Inicio de sesión exitoso. ¡Bienvenido " +
+                    usuarioActivo.getNombreCompleto() + "!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void listarInteresesUI() {
         Coleccionista col = (Coleccionista) usuarioActivo;
-        ArrayList<String> intereses = col.getListaIntereses();
+        ArrayList<String> intereses = controlador.obtenerIntereses(col);
 
         if (intereses.isEmpty()) {
             System.out.println("No hay intereses registrados aún.");
@@ -339,7 +346,7 @@ public class Menu {
     private void agregarInteresUI() {
         Coleccionista col = (Coleccionista) usuarioActivo;
         String interes = input.leerTexto("Ingresa tu interés:");
-        col.agregarInteres(interes);
+        controlador.agregarInteres(col, interes);
         System.out.println("Interés agregado correctamente.");
     }
 
@@ -354,7 +361,14 @@ public class Menu {
     public void listarSubastasUI() {
         System.out.println("\n------Lista de Subastas------");
 
-        ArrayList<Subasta> subastas = servSubasta.listarSubastas();
+        ArrayList<Subasta> subastas;
+
+        try {
+            subastas = controlador.listarSubastas();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
 
         if (subastas.isEmpty()) {
             System.out.println("No hay subastas registradas aún.");
@@ -365,7 +379,8 @@ public class Menu {
             System.out.println((i + 1) + " - " +
                     subastas.get(i).getTitulo() +
                     " - Objetos subastados: " + subastas.get(i).getObjetos().size() +
-                    " - creada por " + subastas.get(i).getCreador().getNombreCompleto());
+                    " - creada por " + subastas.get(i).getCreador().getNombreCompleto() +
+                    " - estado: " + (subastas.get(i).isActiva() ? "Activa" : "Cerrada"));
         }
 
         System.out.println("0 - Volver");
@@ -406,7 +421,7 @@ public class Menu {
             return;
         }
 
-        col.agregarObjeto(objeto);
+        controlador.agregarObjeto(col, objeto);
         System.out.println("Objeto agregado a la colección.");
     }
 
@@ -451,10 +466,10 @@ public class Menu {
         String titulo = input.leerTexto("Ingrese un título para la subasta:");
 
         try {
-            Subasta subasta = servSubasta.registrarSubasta(titulo, usuarioActivo, objetos);
+            Subasta subasta = controlador.registrarSubasta(titulo, usuarioActivo, objetos);
             System.out.println("¡Subasta creada exitosamente!");
             System.out.println(subasta);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
@@ -464,7 +479,7 @@ public class Menu {
         System.out.println("Escoja al menos un objeto de su colección:");
 
         Coleccionista col = (Coleccionista) usuarioActivo;
-        ArrayList<Objeto> objetosColeccionista = col.getObjetosPropios();
+        ArrayList<Objeto> objetosColeccionista = controlador.obtenerObjetos(col);
 
         if (objetosColeccionista.isEmpty()) {
             System.out.println("No tiene objetos en su colección.");
@@ -520,10 +535,10 @@ public class Menu {
         String titulo = input.leerTexto("Ingrese un título para la subasta:");
 
         try {
-            Subasta subasta = servSubasta.registrarSubasta(titulo, col, objetosSeleccionados);
+            Subasta subasta = controlador.registrarSubasta(titulo, col, objetosSeleccionados);
             System.out.println("¡Subasta creada exitosamente!");
             System.out.println(subasta);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
@@ -536,18 +551,20 @@ public class Menu {
         String estado = input.leerTexto("Estado del objeto:");
         LocalDate fechaCompra = input.leerFecha("Fecha de compra (yyyy-MM-dd):");
 
-        try {
-            return new Objeto(nombre, descripcion, estado, fechaCompra);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
+        return new Objeto(nombre, descripcion, estado, fechaCompra);
     }
 
     public void listarOfertasUI(Subasta subasta) {
         System.out.println("\n------Lista de Ofertas------");
 
-        ArrayList<Oferta> ofertas = subasta.getOfertas();
+        ArrayList<Oferta> ofertas;
+
+        try {
+            ofertas = controlador.listarOfertas(subasta);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
 
         if (ofertas.isEmpty()) {
             System.out.println("No hay ofertas aún.");
@@ -559,6 +576,51 @@ public class Menu {
                     ofertas.get(i).getOferente().getNombreCompleto() +
                     " | Monto: " + ofertas.get(i).getMonto() +
                     " | Fecha: " + ofertas.get(i).getFecha());
+        }
+    }
+
+    public void cerrarSubastaUI() {
+        ArrayList<Subasta> subastas;
+
+        try {
+            subastas = controlador.listarSubastas();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        ArrayList<Subasta> propias = new ArrayList<Subasta>();
+
+        for (int i = 0; i < subastas.size(); i++) {
+            if (subastas.get(i).getCreador() != null &&
+                    subastas.get(i).getCreador().equals(usuarioActivo) &&
+                    subastas.get(i).isActiva()) {
+                propias.add(subastas.get(i));
+            }
+        }
+
+        if (propias.isEmpty()) {
+            System.out.println("No tiene subastas activas para cerrar.");
+            return;
+        }
+
+        System.out.println("\n------Cerrar Subasta------");
+        for (int i = 0; i < propias.size(); i++) {
+            System.out.println((i + 1) + " - " + propias.get(i).getTitulo());
+        }
+
+        int opcion = input.leerEntero("Seleccione la subasta a cerrar:");
+
+        if (opcion < 1 || opcion > propias.size()) {
+            opcionInvalida();
+            return;
+        }
+
+        try {
+            controlador.cerrarSubasta(propias.get(opcion - 1));
+            System.out.println("Subasta cerrada correctamente.");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 

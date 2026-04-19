@@ -1,73 +1,84 @@
-CREATE DATABASE subastas_db;
-USE subastas_db;
+DROP DATABASE IF EXISTS bd_subastas;
+CREATE DATABASE bd_subastas;
+USE bd_subastas;
 
-CREATE TABLE usuarios (
-    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_completo VARCHAR(100),
-    identificacion VARCHAR(50),
-    fecha_nacimiento DATE,
-    contrasena VARCHAR(100),
-    correo_electronico VARCHAR(100),
-    tipo_usuario VARCHAR(20),
-    direccion VARCHAR(150),
-    puntuacion DOUBLE
+CREATE TABLE t_usuarios (
+    nombre_completo VARCHAR(120) NOT NULL,
+    identificacion VARCHAR(30) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    contrasena VARCHAR(60) NOT NULL,
+    correo_electronico VARCHAR(120) NOT NULL,
+    tipo_usuario VARCHAR(20) NOT NULL,
+    direccion VARCHAR(200),
+    puntuacion DOUBLE,
+    CONSTRAINT pk_t_usuarios PRIMARY KEY (identificacion),
+    CONSTRAINT uq_t_usuarios_correo UNIQUE (correo_electronico)
 );
 
-CREATE TABLE intereses (
-    id_interes INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT,
+CREATE TABLE t_subastas (
+    id INT NOT NULL AUTO_INCREMENT,
+    titulo VARCHAR(120) NOT NULL,
+    creador_id VARCHAR(30) NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    activa BOOLEAN NOT NULL,
+    CONSTRAINT pk_t_subastas PRIMARY KEY (id),
+    CONSTRAINT fk_t_subastas_usuario FOREIGN KEY (creador_id)
+        REFERENCES t_usuarios(identificacion)
+);
+
+CREATE TABLE t_objetos_subasta (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_subasta INT NOT NULL,
+    nombre VARCHAR(120) NOT NULL,
+    descripcion VARCHAR(300) NOT NULL,
+    estado VARCHAR(80) NOT NULL,
+    fecha_compra DATE NOT NULL,
+    CONSTRAINT pk_t_objetos_subasta PRIMARY KEY (id),
+    CONSTRAINT fk_t_objetos_subasta FOREIGN KEY (id_subasta)
+        REFERENCES t_subastas(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE t_ofertas (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_subasta INT NOT NULL,
+    oferente_id VARCHAR(30) NOT NULL,
+    monto DOUBLE NOT NULL,
+    fecha DATETIME NOT NULL,
+    CONSTRAINT pk_t_ofertas PRIMARY KEY (id),
+    CONSTRAINT fk_t_ofertas_subasta FOREIGN KEY (id_subasta)
+        REFERENCES t_subastas(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_t_ofertas_usuario FOREIGN KEY (oferente_id)
+        REFERENCES t_usuarios(identificacion)
+);
+
+CREATE TABLE t_ordenes (
+    id INT NOT NULL AUTO_INCREMENT,
+    comprador_id VARCHAR(30) NOT NULL,
+    vendedor_id VARCHAR(30) NOT NULL,
+    precio_total DOUBLE NOT NULL,
+    fecha DATETIME NOT NULL,
+    CONSTRAINT pk_t_ordenes PRIMARY KEY (id),
+    CONSTRAINT fk_t_ordenes_comprador FOREIGN KEY (comprador_id)
+        REFERENCES t_usuarios(identificacion),
+    CONSTRAINT fk_t_ordenes_vendedor FOREIGN KEY (vendedor_id)
+        REFERENCES t_usuarios(identificacion)
+);
+
+CREATE TABLE t_intereses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id VARCHAR(30),
     interes VARCHAR(100),
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+    FOREIGN KEY (usuario_id) REFERENCES t_usuarios(identificacion)
 );
 
-CREATE TABLE objetos (
-    id_objeto INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100),
-    descripcion VARCHAR(200),
-    estado VARCHAR(50),
+CREATE TABLE t_objetos_usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id VARCHAR(30),
+    nombre VARCHAR(120),
+    descripcion VARCHAR(300),
+    estado VARCHAR(80),
     fecha_compra DATE,
-    id_propietario INT,
-    FOREIGN KEY (id_propietario) REFERENCES usuarios(id_usuario)
-);
-
-CREATE TABLE subastas (
-    id_subasta INT AUTO_INCREMENT PRIMARY KEY,
-    titulo VARCHAR(100),
-    id_creador INT,
-    activa BOOLEAN,
-    FOREIGN KEY (id_creador) REFERENCES usuarios(id_usuario)
-);
-
-CREATE TABLE subasta_objetos (
-    id_subasta INT,
-    id_objeto INT,
-    PRIMARY KEY (id_subasta, id_objeto),
-    FOREIGN KEY (id_subasta) REFERENCES subastas(id_subasta),
-    FOREIGN KEY (id_objeto) REFERENCES objetos(id_objeto)
-);
-
-CREATE TABLE ofertas (
-     id_oferta INT AUTO_INCREMENT PRIMARY KEY,
-     id_subasta INT,
-     id_oferente INT,
-     monto DOUBLE,
-     fecha DATETIME,
-     FOREIGN KEY (id_subasta) REFERENCES subastas(id_subasta),
-     FOREIGN KEY (id_oferente) REFERENCES usuarios(id_usuario)
-);
-
-CREATE TABLE ordenes (
-     id_orden INT AUTO_INCREMENT PRIMARY KEY,
-     id_comprador INT,
-     precio_total DOUBLE,
-     fecha DATETIME,
-     FOREIGN KEY (id_comprador) REFERENCES usuarios(id_usuario)
-);
-
-CREATE TABLE orden_objetos (
-   id_orden INT,
-   id_objeto INT,
-   PRIMARY KEY (id_orden, id_objeto),
-   FOREIGN KEY (id_orden) REFERENCES ordenes(id_orden),
-   FOREIGN KEY (id_objeto) REFERENCES objetos(id_objeto)
+    FOREIGN KEY (usuario_id) REFERENCES t_usuarios(identificacion)
 );

@@ -20,8 +20,7 @@ public class ConsoleInput {
         while (true) {
             try {
                 System.out.print(mensaje + " ");
-                int valor = Integer.parseInt(scanner.nextLine());
-                return valor;
+                return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Debe ingresar un número entero.");
             }
@@ -32,8 +31,7 @@ public class ConsoleInput {
         while (true) {
             try {
                 System.out.print(mensaje + " ");
-                double valor = Double.parseDouble(scanner.nextLine());
-                return valor;
+                return Double.parseDouble(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Debe ingresar un número decimal válido.");
             }
@@ -44,8 +42,7 @@ public class ConsoleInput {
         while (true) {
             try {
                 System.out.print(mensaje + " ");
-                String texto = scanner.nextLine();
-                return LocalDate.parse(texto);
+                return LocalDate.parse(scanner.nextLine());
             } catch (Exception e) {
                 System.out.println("Fecha inválida. Use el formato yyyy-MM-dd.");
             }
@@ -59,11 +56,13 @@ public class ConsoleInput {
 
             if (respuesta.equalsIgnoreCase("S")) {
                 return true;
-            } else if (respuesta.equalsIgnoreCase("N")) {
-                return false;
-            } else {
-                System.out.println("Respuesta inválida. Ingrese S o N.");
             }
+
+            if (respuesta.equalsIgnoreCase("N")) {
+                return false;
+            }
+
+            System.out.println("Respuesta inválida. Ingrese S o N.");
         }
     }
 }

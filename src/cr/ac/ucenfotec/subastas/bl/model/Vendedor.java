@@ -3,44 +3,30 @@ package cr.ac.ucenfotec.subastas.bl.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * Representa a un usuario vendedor dentro del sistema.
+ */
 public class Vendedor extends Usuario {
 
-    // Atributos propios
-
     private String direccion;
-    private ArrayList<Objeto> objetosPropios;
-
-    // Constructores
+    private ArrayList<Subasta> subastasCreadas;
 
     public Vendedor() {
         super();
-        this.objetosPropios = new ArrayList<>();
+        this.direccion = "";
+        this.subastasCreadas = new ArrayList<Subasta>();
     }
 
-    public Vendedor(String nombreCompleto, String identificacion,
-                     LocalDate fechaNacimiento, String contrasena,
-                     String correoElectronico, String direccion) {
-
+    public Vendedor(String nombreCompleto, String identificacion, LocalDate fechaNacimiento,
+                    String contrasena, String correoElectronico, String direccion) {
         super(nombreCompleto, identificacion, fechaNacimiento, contrasena, correoElectronico);
         this.direccion = direccion;
-        this.objetosPropios = new ArrayList<>();
+        this.subastasCreadas = new ArrayList<Subasta>();
     }
-
-    // Método polimórfico
 
     public String getTipoUsuario() {
         return "Vendedor";
     }
-
-    // Métodos propios
-
-    public void agregarObjeto(Objeto objeto) {
-        if (objeto != null) {
-            objetosPropios.add(objeto);
-        }
-    }
-
-    // Getters y Setters
 
     public String getDireccion() {
         return direccion;
@@ -50,20 +36,23 @@ public class Vendedor extends Usuario {
         this.direccion = direccion;
     }
 
-    public ArrayList<Objeto> getObjetosPropios() {
-        return objetosPropios;
+    public ArrayList<Subasta> getSubastasCreadas() {
+        return subastasCreadas;
     }
 
-    public void setObjetosPropios(ArrayList<Objeto> objetosPropios) {
-        this.objetosPropios = objetosPropios;
+    public void setSubastasCreadas(ArrayList<Subasta> subastasCreadas) {
+        this.subastasCreadas = subastasCreadas;
     }
 
-    // toString
+    public void agregarSubasta(Subasta subasta) {
+        if (subasta != null) {
+            subastasCreadas.add(subasta);
+        }
+    }
 
     public String toString() {
-        return "Vendedor {" + super.toString() +
-                ", Direccion='" + direccion + '\'' +
-                ", CantidadObjetos=" + objetosPropios.size() +
-                "}";
+        return "Vendedor\n" + super.toString() +
+                "\nDirección: " + direccion +
+                "\nCantidad de subastas creadas: " + subastasCreadas.size();
     }
 }

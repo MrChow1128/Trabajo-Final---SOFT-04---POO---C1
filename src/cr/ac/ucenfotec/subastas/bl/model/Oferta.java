@@ -2,23 +2,24 @@ package cr.ac.ucenfotec.subastas.bl.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * Representa una oferta realizada por un coleccionista.
+ */
 public class Oferta {
-
-    // Atributos
 
     private Coleccionista oferente;
     private double monto;
     private LocalDateTime fecha;
 
-    // Constructor
+    public Oferta() {
+        this.fecha = LocalDateTime.now();
+    }
 
     public Oferta(Coleccionista oferente, double monto) {
         this.oferente = oferente;
         this.monto = monto;
         this.fecha = LocalDateTime.now();
     }
-
-    // Getters y Setters
 
     public Coleccionista getOferente() {
         return oferente;
@@ -40,26 +41,26 @@ public class Oferta {
         return fecha;
     }
 
-    // equals
-
-    public boolean equals(Oferta otra) {
-        if (otra == null) {
-            return false;
-        }
-
-        if (this.oferente == null || otra.getOferente() == null) {
-            return false;
-        }
-
-        return this.oferente.equals(otra.getOferente()) &&
-                this.monto == otra.getMonto();
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
     }
 
-    // toString
+    public boolean equals(Oferta otraOferta) {
+        if (otraOferta == null) {
+            return false;
+        }
+
+        if (oferente == null || otraOferta.getOferente() == null) {
+            return false;
+        }
+
+        return oferente.equals(otraOferta.getOferente()) &&
+                monto == otraOferta.getMonto();
+    }
 
     public String toString() {
         return "Oferta" +
-                "\n\tOferente: " + oferente.getNombreCompleto() +
+                "\n\tOferente: " + (oferente != null ? oferente.getNombreCompleto() : "Sin oferente") +
                 "\n\tMonto ofertado: " + monto +
                 "\n\tFecha: " + fecha;
     }

@@ -2,29 +2,25 @@ package cr.ac.ucenfotec.subastas.bl.model;
 
 import java.time.LocalDate;
 
+/**
+ * Usuario de tipo moderador.
+ */
 public class Moderador extends Usuario {
-
-    // Constructores
 
     public Moderador() {
         super();
     }
 
-    public Moderador(String nombreCompleto, String identificacion,
-                     LocalDate fechaNacimiento, String contrasena,
-                     String correoElectronico) {
+    public Moderador(String nombreCompleto, String identificacion, LocalDate fechaNacimiento,
+                     String contrasena, String correoElectronico) {
         super(nombreCompleto, identificacion, fechaNacimiento, contrasena, correoElectronico);
     }
-
-    // Método polimórfico
 
     public String getTipoUsuario() {
         return "Moderador";
     }
 
-    // toString
-
     public String toString() {
-        return "Moderador {" + super.toString() + "}";
+        return "Moderador\n" + super.toString();
     }
 }
