@@ -30,6 +30,13 @@ public class AccesoBD {
         preparedStatement.executeUpdate();
     }
 
+    public void ejecutarStatement(String statement, String s1, String s2) throws SQLException {
+        preparedStatement = conexion.prepareStatement(statement);
+        preparedStatement.setString(1, s1);
+        preparedStatement.setString(2, s2);
+        preparedStatement.executeUpdate();
+    }
+
     public void ejecutarStatement(String statement, String s1, String s2, Object o1, boolean b1) throws SQLException {
         preparedStatement = conexion.prepareStatement(statement);
         preparedStatement.setString(1, s1);
@@ -52,6 +59,16 @@ public class AccesoBD {
         preparedStatement.setString(3, s2);
         preparedStatement.setString(4, s3);
         preparedStatement.setString(5, s4);
+        preparedStatement.executeUpdate();
+    }
+
+    public void ejecutarStatement(String statement, String s1, String s2, String s3, String s4, String s5) throws SQLException {
+        preparedStatement = conexion.prepareStatement(statement);
+        preparedStatement.setString(1, s1);
+        preparedStatement.setString(2, s2);
+        preparedStatement.setString(3, s3);
+        preparedStatement.setString(4, s4);
+        preparedStatement.setString(5, s5);
         preparedStatement.executeUpdate();
     }
 

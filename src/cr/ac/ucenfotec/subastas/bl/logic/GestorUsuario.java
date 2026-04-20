@@ -1,10 +1,7 @@
 package cr.ac.ucenfotec.subastas.bl.logic;
 
 import cr.ac.ucenfotec.subastas.bl.dao.DAOUsuario;
-import cr.ac.ucenfotec.subastas.bl.model.Coleccionista;
-import cr.ac.ucenfotec.subastas.bl.model.Moderador;
-import cr.ac.ucenfotec.subastas.bl.model.Usuario;
-import cr.ac.ucenfotec.subastas.bl.model.Vendedor;
+import cr.ac.ucenfotec.subastas.bl.model.*;
 import cr.ac.ucenfotec.subastas.bl.dao.DAOInteres;
 import cr.ac.ucenfotec.subastas.bl.dao.DAOObjetoUsuario;
 
